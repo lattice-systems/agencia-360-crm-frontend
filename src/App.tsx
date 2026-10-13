@@ -4,8 +4,8 @@ import { RutaProtegida } from './navegacion/RutaProtegida.tsx'
 import { rolesDe } from './navegacion/secciones.ts'
 import { InicioPage } from './paginas/InicioPage.tsx'
 import { LoginPage } from './paginas/LoginPage.tsx'
+import { ProspectosPage } from './paginas/ProspectosPage.tsx'
 import { UsuariosPage } from './paginas/UsuariosPage.tsx'
-import ListaProspectos from './prospectos/ListaProspectos.tsx'
 import RegistroProspectoForm from './prospectos/RegistroProspectoForm.tsx'
 import { SesionProvider } from './sesion/SesionProvider.tsx'
 import './App.css'
@@ -27,7 +27,7 @@ function App() {
             path="prospectos"
             element={
               <RutaProtegida roles={rolesDe('/prospectos')}>
-                <ListaProspectos />
+                <ProspectosPage />
               </RutaProtegida>
             }
           />

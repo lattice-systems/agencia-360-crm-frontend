@@ -39,6 +39,7 @@
       background: transparent;
       color: #fff;
       font-weight: 600;
+      white-space: nowrap;
       cursor: pointer;
 
       &:hover {

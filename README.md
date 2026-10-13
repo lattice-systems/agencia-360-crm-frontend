@@ -104,13 +104,13 @@ La aplicación queda disponible en `http://localhost:5173`. Si el ERP también e
 
 Con `npm run dev`, MSW simula el backend (login, usuarios, roles y prospectos) con estas cuentas de ejemplo. Todas usan la contraseña `Secreta123`:
 
-| Usuario     | Rol                  | Qué ve                                               |
-| ----------- | -------------------- | ---------------------------------------------------- |
-| `vendedor1` | Ventas               | Sus prospectos y el registro                         |
-| `vendedor2` | Ventas               | Ningún prospecto (sirve para probar la visibilidad)  |
-| `gerente`   | Gerente de marketing | Todos los prospectos y la administración de usuarios |
-| `conta1`    | Contabilidad         | Aviso de que su rol aún no tiene secciones           |
-| `caja1`     | Caja                 | No entra: su rol no tiene acceso al CRM              |
+| Usuario     | Rol                  | Qué ve                                                                |
+| ----------- | -------------------- | --------------------------------------------------------------------- |
+| `vendedor1` | Ventas               | Sus prospectos y el registro                                          |
+| `vendedor2` | Ventas               | Ningún prospecto (sirve para probar la visibilidad)                   |
+| `gerente`   | Gerente de marketing | Todos los prospectos (y los reasigna) y la administración de usuarios |
+| `conta1`    | Contabilidad         | Aviso de que su rol aún no tiene secciones                            |
+| `caja1`     | Caja                 | No entra: su rol no tiene acceso al CRM                               |
 
 Para usar el backend real, crea `.env.development.local` con `VITE_API_MOCK=false` (ver `.env.example`). Las llamadas a `/api` pasan por el proxy de Vite a `http://localhost:8080`, así que el backend debe estar corriendo; la primera cuenta es la del gerente inicial (`GERENTE_INICIAL_USUARIO` en el backend).
 
@@ -165,6 +165,8 @@ Las secciones de cada rol están en `src/navegacion/secciones.ts`, según la mat
 | Prospectos | `/prospectos` | Ventas y Gerente de marketing |
 | Registrar  | `/registrar`  | Ventas                        |
 | Usuarios   | `/usuarios`   | Gerente de marketing          |
+
+En Prospectos, el gerente de marketing además ve y cambia el vendedor de cada prospecto (reasignación).
 
 Quien no tiene sesión va a `/login`. Un rol sin permiso para una ruta ve «Sin permiso». Si el token vence o el backend responde 401, la sesión se cierra y el login avisa que expiró.
 
