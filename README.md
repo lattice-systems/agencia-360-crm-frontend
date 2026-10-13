@@ -2,7 +2,7 @@
 
 Aplicación web del **CRM de CareCar**, el sistema con el que los vendedores de la agencia automotriz dan seguimiento a sus prospectos, desde el primer contacto hasta la entrega de la unidad. Está pensada para usarse principalmente desde el celular.
 
-> **Estado:** estructura inicial del proyecto. `src/App.tsx` todavía es la pantalla de ejemplo de la plantilla de Vite; no hay funcionalidad del CRM implementada.
+> **Estado:** inicio de sesión, menú por rol y administración de usuarios (CRM-0.1); registro y lista de prospectos con cambio de etapa (CRM-1.0 y CRM-1.1). Mientras el backend no tenga los endpoints de prospectos, en desarrollo se simulan con MSW.
 
 ---
 
@@ -28,11 +28,11 @@ Aplicación web del **CRM de CareCar**, el sistema con el que los vendedores de 
 
 **Agencia360** se compone de:
 
-| Aplicación        | Usuarios                                         | Repositorio                                                                               |
-| ----------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| **CRM web**       | Vendedores, gerente de marketing y administrador | Este repositorio                                                                          |
-| **ERP web**       | Personal de los departamentos de la agencia      | [`agencia-360-erp-frontend`](https://github.com/lattice-systems/agencia-360-erp-frontend) |
-| **API (backend)** | Atiende al ERP, al CRM y a la app CareCar        | [`agencia-360-backend`](https://github.com/lattice-systems/agencia-360-backend)           |
+| Aplicación        | Usuarios                                    | Repositorio                                                                               |
+| ----------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **CRM web**       | Vendedores y gerente de marketing           | Este repositorio                                                                          |
+| **ERP web**       | Personal de los departamentos de la agencia | [`agencia-360-erp-frontend`](https://github.com/lattice-systems/agencia-360-erp-frontend) |
+| **API (backend)** | Atiende al ERP, al CRM y a la app CareCar   | [`agencia-360-backend`](https://github.com/lattice-systems/agencia-360-backend)           |
 
 La app móvil de clientes (**CareCar**, Flutter) es un proyecto aparte que consume la misma API.
 
@@ -54,14 +54,16 @@ Las historias de usuario, su prioridad y el sprint de cada una se gestionan en e
 
 ## Stack tecnológico
 
-| Tecnología                     | Uso                                |
-| ------------------------------ | ---------------------------------- |
-| React + TypeScript             | Librería de UI y tipado estático   |
-| Vite                           | Servidor de desarrollo y build     |
-| ESLint                         | Análisis estático del código       |
-| Vitest + React Testing Library | Pruebas unitarias y de componentes |
+| Tecnología                     | Uso                                      |
+| ------------------------------ | ---------------------------------------- |
+| React + TypeScript             | Librería de UI y tipado estático         |
+| Vite                           | Servidor de desarrollo y build           |
+| ESLint                         | Análisis estático del código             |
+| Vitest + React Testing Library | Pruebas unitarias y de componentes       |
+| React Router 7                 | Navegación entre pantallas               |
+| MSW 2 (Mock Service Worker)    | Simula la API en desarrollo y en pruebas |
 
-Las librerías complementarias (navegación, formularios, consumo de API y componentes de UI) aún no están definidas. Ver [Pendientes por definir](#pendientes-por-definir).
+El consumo de la API usa `fetch` con un cliente propio (`src/api/cliente.ts`) que agrega el token de la sesión. Los estilos son CSS propio. La sesión se guarda en `sessionStorage`: sobrevive a recargar la página y se borra al cerrar la pestaña. Formularios y componentes de UI siguen sin librería. Ver [Pendientes por definir](#pendientes-por-definir).
 
 ---
 
@@ -98,6 +100,20 @@ npm run dev
 
 La aplicación queda disponible en `http://localhost:5173`. Si el ERP también está corriendo, Vite usa el siguiente puerto libre (`5174`) y lo indica en la terminal.
 
+### Entrar al CRM en desarrollo
+
+Con `npm run dev`, MSW simula el backend (login, usuarios, roles y prospectos) con estas cuentas de ejemplo. Todas usan la contraseña `Secreta123`:
+
+| Usuario     | Rol                  | Qué ve                                               |
+| ----------- | -------------------- | ---------------------------------------------------- |
+| `vendedor1` | Ventas               | Sus prospectos y el registro                         |
+| `vendedor2` | Ventas               | Ningún prospecto (sirve para probar la visibilidad)  |
+| `gerente`   | Gerente de marketing | Todos los prospectos y la administración de usuarios |
+| `conta1`    | Contabilidad         | Aviso de que su rol aún no tiene secciones           |
+| `caja1`     | Caja                 | No entra: su rol no tiene acceso al CRM              |
+
+Para usar el backend real, crea `.env.development.local` con `VITE_API_MOCK=false` (ver `.env.example`). Las llamadas a `/api` pasan por el proxy de Vite a `http://localhost:8080`, así que el backend debe estar corriendo; la primera cuenta es la del gerente inicial (`GERENTE_INICIAL_USUARIO` en el backend).
+
 ---
 
 ## Scripts disponibles
@@ -121,10 +137,16 @@ agencia-360-crm-frontend/
 ├── docs/                # Convenciones de ramas, commits y PR
 ├── public/              # Archivos estáticos servidos tal cual
 ├── src/
-│   ├── test/setup.ts    # Configuración común de las pruebas
-│   ├── assets/          # Imágenes importadas desde el código
-│   ├── App.tsx          # Componente raíz (todavía la pantalla de ejemplo de Vite)
-│   ├── App.test.tsx     # Prueba del componente raíz
+│   ├── api/             # Cliente HTTP y endpoints de acceso (login, usuarios, roles)
+│   ├── componentes/     # Layout con encabezado, menú y cierre de sesión
+│   ├── mocks/           # Handlers de MSW y datos de ejemplo
+│   ├── navegacion/      # Secciones por rol y rutas protegidas
+│   ├── paginas/         # Login, inicio y usuarios
+│   ├── prospectos/      # Registro y lista de prospectos
+│   ├── sesion/          # Sesión: almacenamiento, contexto y nombres de rol
+│   ├── test/            # Configuración común y utilidades de las pruebas
+│   ├── App.tsx          # Rutas de la aplicación
+│   ├── App.test.tsx     # Pruebas de navegación de la aplicación
 │   ├── main.tsx         # Punto de entrada de la aplicación
 │   └── index.css        # Estilos globales
 ├── index.html           # HTML base
@@ -134,7 +156,17 @@ agencia-360-crm-frontend/
 └── package.json
 ```
 
-La organización de carpetas dentro de `src/` se definirá conforme avance el desarrollo.
+### Roles y secciones
+
+Las secciones de cada rol están en `src/navegacion/secciones.ts`, según la matriz de roles. Cada pantalla nueva agrega ahí su sección y sus roles:
+
+| Sección    | Ruta          | Roles                         |
+| ---------- | ------------- | ----------------------------- |
+| Prospectos | `/prospectos` | Ventas y Gerente de marketing |
+| Registrar  | `/registrar`  | Ventas                        |
+| Usuarios   | `/usuarios`   | Gerente de marketing          |
+
+Quien no tiene sesión va a `/login`. Un rol sin permiso para una ruta ve «Sin permiso». Si el token vence o el backend responde 401, la sesión se cierra y el login avisa que expiró.
 
 ---
 
@@ -156,7 +188,7 @@ Lineamientos que afectan al frontend:
 
 - La API se documenta con OpenAPI; el cliente TypeScript del frontend se generará a partir de ese contrato.
 - Las reglas de negocio (por ejemplo, el cambio de etapa de un prospecto cuando se factura) las resuelve el backend; el CRM solo las muestra.
-- El acceso se controla por roles: vendedor, gerente de marketing y administrador.
+- El acceso se controla por roles: el vendedor ve y edita solo sus prospectos, y el gerente de marketing ve todos y administra los usuarios del CRM. La regla la aplica el backend; el CRM solo muestra lo que recibe.
 - La interfaz debe funcionar bien en pantallas de celular, porque los vendedores la usan en piso de ventas.
 
 ---
@@ -166,10 +198,12 @@ Lineamientos que afectan al frontend:
 | Tipo                       | Herramienta                    | Estado         |
 | -------------------------- | ------------------------------ | -------------- |
 | Unitarias y de componentes | Vitest + React Testing Library | Configurado    |
-| Simulación de la API       | MSW (Mock Service Worker)      | Por configurar |
+| Simulación de la API       | MSW (Mock Service Worker)      | Configurado    |
 | End-to-end                 | Playwright                     | Por configurar |
 
-Las pruebas corren en un DOM simulado con `jsdom` y usan los matchers de `@testing-library/jest-dom` (`toBeInTheDocument`, `toHaveTextContent`, etc.). Para simular lo que hace el usuario (clics, escribir en un campo) se usa `@testing-library/user-event`; `src/App.test.tsx` tiene un ejemplo con el botón del contador.
+Las pruebas corren en un DOM simulado con `jsdom` y usan los matchers de `@testing-library/jest-dom` (`toBeInTheDocument`, `toHaveTextContent`, etc.). Para simular lo que hace el usuario (clics, escribir en un campo) se usa `@testing-library/user-event`.
+
+Las pruebas usan los mismos handlers de MSW que `npm run dev` (`src/mocks/`). Una petición sin handler hace fallar la prueba. Para simular otra respuesta en una prueba se usa `server.use(...)`, y para entrar con un rol, `conSesion('VENTAS')` de `src/test/utilidades.ts`.
 
 Cada prueba vive junto al componente que prueba, con el sufijo `.test.tsx`:
 
@@ -220,14 +254,12 @@ El detalle de cada check está en [`docs/convenciones-commits.md`](docs/convenci
 
 ## Pendientes por definir
 
-| Tema                 | Qué falta                                                   |
-| -------------------- | ----------------------------------------------------------- |
-| Pantallas del CRM    | Reemplazar la pantalla de ejemplo de Vite por la del CRM    |
-| Etapas del prospecto | Lista definitiva de etapas y motivos de pérdida             |
-| Librerías            | Navegación, formularios, consumo de API y componentes de UI |
-| Estructura de `src/` | Organización de carpetas y convenciones de código           |
-| Pruebas              | Instalación y configuración de MSW y Playwright             |
-| Despliegue           | Servicio de Azure y ambientes                               |
+| Tema                 | Qué falta                                       |
+| -------------------- | ----------------------------------------------- |
+| Etapas del prospecto | Lista definitiva de etapas y motivos de pérdida |
+| Librerías            | Formularios y componentes de UI                 |
+| Pruebas              | Instalación y configuración de Playwright       |
+| Despliegue           | Servicio de Azure y ambientes                   |
 
 ---
 

@@ -1,44 +1,56 @@
-import { useState } from 'react'
+import { Navigate, Route, Routes } from 'react-router'
+import { Layout } from './componentes/Layout.tsx'
+import { RutaProtegida } from './navegacion/RutaProtegida.tsx'
+import { rolesDe } from './navegacion/secciones.ts'
+import { InicioPage } from './paginas/InicioPage.tsx'
+import { LoginPage } from './paginas/LoginPage.tsx'
+import { UsuariosPage } from './paginas/UsuariosPage.tsx'
 import ListaProspectos from './prospectos/ListaProspectos.tsx'
 import RegistroProspectoForm from './prospectos/RegistroProspectoForm.tsx'
+import { SesionProvider } from './sesion/SesionProvider.tsx'
 import './App.css'
 
-type Vista = 'prospectos' | 'registrar'
-
-const VISTAS: { id: Vista; nombre: string }[] = [
-  { id: 'prospectos', nombre: 'Prospectos' },
-  { id: 'registrar', nombre: 'Registrar' },
-]
-
-// La librería de navegación todavía no está definida (ver README, "Pendientes
-// por definir"); mientras tanto la vista se elige con estado local.
 function App() {
-  const [vista, setVista] = useState<Vista>('prospectos')
-
   return (
-    <>
-      <header className="encabezado">
-        <div className="contenido">
-          <h1>Agencia360 · CRM</h1>
-          <nav aria-label="Secciones">
-            {VISTAS.map(({ id, nombre }) => (
-              <button
-                key={id}
-                type="button"
-                aria-current={vista === id ? 'page' : undefined}
-                onClick={() => setVista(id)}
-              >
-                {nombre}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
-
-      <main className="principal">
-        {vista === 'prospectos' ? <ListaProspectos /> : <RegistroProspectoForm />}
-      </main>
-    </>
+    <SesionProvider>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          element={
+            <RutaProtegida>
+              <Layout />
+            </RutaProtegida>
+          }
+        >
+          <Route index element={<InicioPage />} />
+          <Route
+            path="prospectos"
+            element={
+              <RutaProtegida roles={rolesDe('/prospectos')}>
+                <ListaProspectos />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="registrar"
+            element={
+              <RutaProtegida roles={rolesDe('/registrar')}>
+                <RegistroProspectoForm />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="usuarios"
+            element={
+              <RutaProtegida roles={rolesDe('/usuarios')}>
+                <UsuariosPage />
+              </RutaProtegida>
+            }
+          />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </SesionProvider>
   )
 }
 

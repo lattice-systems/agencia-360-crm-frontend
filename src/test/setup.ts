@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
+import { reiniciarUsuarios } from '../mocks/acceso.ts'
 import { reiniciarDatos } from '../mocks/datos.ts'
 import { server } from '../mocks/server.ts'
 
@@ -10,9 +11,11 @@ beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' })
 })
 
-// Cada prueba arranca con los mismos prospectos de ejemplo.
+// Cada prueba arranca con los mismos prospectos y usuarios de ejemplo, y sin sesión.
 beforeEach(() => {
   reiniciarDatos()
+  reiniciarUsuarios()
+  sessionStorage.clear()
 })
 
 // Sin globals de Vitest, React Testing Library no limpia el DOM por su cuenta
