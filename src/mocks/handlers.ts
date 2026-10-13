@@ -7,6 +7,7 @@ import {
   todosLosProspectos,
 } from './datos.ts'
 import { actorDe, handlersAcceso } from './acceso.ts'
+import { handlersReasignacion } from './reasignacion.ts'
 
 // Simula el backend mientras los endpoints de prospectos no existen.
 // Sigue el borrador de contrato de Coper (Sprints/borradores-coper).
@@ -29,6 +30,7 @@ function esEtapa(valor: unknown): valor is Etapa {
 
 export const handlers = [
   ...handlersAcceso,
+  ...handlersReasignacion,
 
   http.get(URL_PROSPECTOS, ({ request }) => {
     const etapa = new URL(request.url).searchParams.get('etapa')

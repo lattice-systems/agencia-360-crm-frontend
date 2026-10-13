@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
+import type { UsuarioApi } from '../api/acceso.ts'
+import { mensajeDeError } from '../api/cliente.ts'
 import { cambiarEtapa, listarProspectos } from './api.ts'
+import { reasignarProspecto } from './reasignacion.ts'
 import { ETAPAS, NOMBRES_ETAPA, type Etapa, type Prospecto } from './tipos.ts'
 import './ListaProspectos.css'
 
@@ -19,9 +22,14 @@ function contacto(prospecto: Prospecto): string {
   return [prospecto.telefono, prospecto.correo].filter(Boolean).join(' · ')
 }
 
+interface Props {
+  /** Si se indican, se muestra el selector para reasignar (CRM-0.1, gerente). */
+  vendedores?: UsuarioApi[]
+}
+
 // CRM-1.1 (MVP): lista filtrable por etapa donde se cambia la etapa.
 // La visibilidad (VENTAS solo ve los suyos) la aplica el servidor.
-function ListaProspectos() {
+function ListaProspectos({ vendedores }: Props) {
   const [filtro, setFiltro] = useState<Etapa | ''>('')
   const [intento, setIntento] = useState(0)
   const [carga, setCarga] = useState<Carga>('cargando')
@@ -93,6 +101,31 @@ function ListaProspectos() {
       setAviso({
         tipo: 'error',
         texto: `No se pudo cambiar la etapa de ${prospecto.nombre}. Intenta de nuevo.`,
+      })
+    } finally {
+      marcarGuardando(prospecto.id, false)
+    }
+  }
+
+  async function manejarReasignacion(prospecto: Prospecto, vendedorId: number) {
+    marcarGuardando(prospecto.id, true)
+    setAviso(null)
+    try {
+      const actualizado = await reasignarProspecto(prospecto.id, vendedorId)
+      setProspectos((lista) =>
+        lista.map((p) => (p.id === actualizado.id ? actualizado : p)),
+      )
+      const nombre =
+        vendedores?.find((v) => v.id === actualizado.vendedorId)?.nombre ??
+        'otro vendedor'
+      setAviso({
+        tipo: 'exito',
+        texto: `${actualizado.nombre} ahora lo atiende ${nombre}.`,
+      })
+    } catch (error) {
+      setAviso({
+        tipo: 'error',
+        texto: `No se pudo reasignar a ${prospecto.nombre}. ${mensajeDeError(error)}`,
       })
     } finally {
       marcarGuardando(prospecto.id, false)
@@ -197,6 +230,35 @@ function ListaProspectos() {
                     ))}
                   </select>
                 </div>
+                {vendedores && (
+                  <div className="vendedor">
+                    <label
+                      htmlFor={`vendedor-${prospecto.id}`}
+                      className="solo-lector"
+                    >
+                      Vendedor de {prospecto.nombre}
+                    </label>
+                    <select
+                      id={`vendedor-${prospecto.id}`}
+                      value={prospecto.vendedorId}
+                      disabled={guardando.has(prospecto.id)}
+                      onChange={(e) =>
+                        manejarReasignacion(prospecto, Number(e.target.value))
+                      }
+                    >
+                      {!vendedores.some((v) => v.id === prospecto.vendedorId) && (
+                        <option value={prospecto.vendedorId}>
+                          Vendedor sin acceso
+                        </option>
+                      )}
+                      {vendedores.map((vendedor) => (
+                        <option key={vendedor.id} value={vendedor.id}>
+                          {vendedor.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </li>
             )
           })}

@@ -87,7 +87,8 @@
     font-size: 13px;
   }
 
-  .etapa select {
+  .etapa select,
+  .vendedor select {
     width: 100%;
   }
 }
@@ -107,7 +108,12 @@
       gap: 24px;
     }
 
-    .etapa select {
+    .datos {
+      flex: 1;
+    }
+
+    .etapa select,
+    .vendedor select {
       width: 200px;
     }
   }

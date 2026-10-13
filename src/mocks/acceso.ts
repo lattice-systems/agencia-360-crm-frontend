@@ -80,6 +80,10 @@ export function reiniciarUsuarios() {
   usuarios = USUARIOS_INICIALES.map((u) => ({ ...u }))
 }
 
+export function buscarUsuario(id: number): UsuarioApi | undefined {
+  return usuarios.find((u) => u.id === id)
+}
+
 const tieneAccesoAlCrm = (rol: Rol) => ROLES_CRM.some((r) => r.nombre === rol)
 
 function apiError(
