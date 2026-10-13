@@ -112,7 +112,32 @@ Con `npm run dev`, MSW simula el backend (login, usuarios, roles y prospectos) c
 | `conta1`    | Contabilidad         | Aviso de que su rol aún no tiene secciones                            |
 | `caja1`     | Caja                 | No entra: su rol no tiene acceso al CRM                               |
 
-Para usar el backend real, crea `.env.development.local` con `VITE_API_MOCK=false` (ver `.env.example`). Las llamadas a `/api` pasan por el proxy de Vite a `http://localhost:8080`, así que el backend debe estar corriendo; la primera cuenta es la del gerente inicial (`GERENTE_INICIAL_USUARIO` en el backend).
+### Usar el backend real con datos de ejemplo
+
+Crea `.env.development.local` con `VITE_API_MOCK=false` (ver `.env.example`). Las llamadas a `/api` pasan por el proxy de Vite a `http://localhost:8080`, así que el backend debe estar corriendo.
+
+El backend trae un juego de datos de ejemplo (TEC-3) con usuarios del CRM y 12 prospectos en las 7 etapas. Desde la carpeta del backend:
+
+```bash
+docker compose up -d
+ADMIN_INICIAL_USUARIO=admin ADMIN_INICIAL_CONTRASENA=Admin12345 \
+GERENTE_INICIAL_USUARIO=gerente GERENTE_INICIAL_CONTRASENA=Gerente12345 \
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+# En otra terminal:
+./scripts/cargar-datos-de-ejemplo.sh
+```
+
+> **Solo para desarrollo local.** Estas contraseñas son públicas y **no son las de MSW**.
+
+| Usuario     | Contraseña     | Rol                  | Qué debe ver                                                                 |
+| ----------- | -------------- | -------------------- | ---------------------------------------------------------------------------- |
+| `vendedor1` | `Vendedor123`  | Ventas (Sergio Luna) | Sus 6 prospectos, de Primer contacto a Cerrado                               |
+| `vendedor2` | `Vendedor123`  | Ventas (Elena Ríos)  | Sus 6 prospectos, incluido Ricardo Fuentes, que el Gerente le reasignó        |
+| `gerente`   | `Gerente12345` | Gerente de marketing | Los 12 prospectos, con al menos uno en cada etapa, y la administración de usuarios |
+
+Para ver el aviso de contacto repetido, entra con `vendedor2` y registra un prospecto con el teléfono `477 555 0101`, que ya tiene Ana López.
+
+Qué contiene cada dato está en `docs/datos-de-ejemplo.md` del backend; cómo cargar, verificar y limpiar, en su README (sección 5.6). Si el ERP también está corriendo y el CRM quedó en el `5174`, el backend con perfil `dev` ya permite ese puerto.
 
 ---
 
