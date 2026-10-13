@@ -4,8 +4,9 @@ import { listarVendedores } from '../prospectos/reasignacion.ts'
 import ListaProspectos from '../prospectos/ListaProspectos.tsx'
 import { useSesion } from '../sesion/useSesion.ts'
 
-// Ventas ve la lista tal cual. El Gerente de marketing, además, puede
-// reasignar: el selector aparece en cuanto se cargan los vendedores (CRM-0.1).
+// Ventas ve la lista y cambia la etapa de sus prospectos. El Gerente de
+// marketing ve todos y puede reasignar (el selector aparece en cuanto se cargan
+// los vendedores, CRM-0.1), pero no cambia etapas (decisión del PO).
 export function ProspectosPage() {
   const { sesion } = useSesion()
   const esGerente = sesion?.rol === 'GERENTE_MARKETING'
@@ -37,7 +38,10 @@ export function ProspectosPage() {
           reasignar.
         </p>
       )}
-      <ListaProspectos vendedores={vendedores ?? undefined} />
+      <ListaProspectos
+        vendedores={vendedores ?? undefined}
+        puedeCambiarEtapa={sesion?.rol === 'VENTAS'}
+      />
     </>
   )
 }

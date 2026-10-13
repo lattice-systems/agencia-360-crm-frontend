@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import type { UsuarioApi } from '../api/acceso.ts'
 import { mensajeDeError } from '../api/cliente.ts'
 import { cambiarEtapa, listarProspectos } from './api.ts'
@@ -25,17 +25,30 @@ function contacto(prospecto: Prospecto): string {
 interface Props {
   /** Si se indican, se muestra el selector para reasignar (CRM-0.1, gerente). */
   vendedores?: UsuarioApi[]
+  /**
+   * Solo el vendedor cambia la etapa (decisión del PO del 12 de octubre). Sin
+   * permiso, la etapa se muestra como texto.
+   */
+  puedeCambiarEtapa?: boolean
+}
+
+/** Cierre en captura: el prospecto pasa a Cerrado solo al confirmar el motivo. */
+interface Cierre {
+  prospectoId: number
+  motivo: string
+  faltaMotivo: boolean
 }
 
 // CRM-1.1 (MVP): lista filtrable por etapa donde se cambia la etapa.
 // La visibilidad (VENTAS solo ve los suyos) la aplica el servidor.
-function ListaProspectos({ vendedores }: Props) {
+function ListaProspectos({ vendedores, puedeCambiarEtapa = true }: Props) {
   const [filtro, setFiltro] = useState<Etapa | ''>('')
   const [intento, setIntento] = useState(0)
   const [carga, setCarga] = useState<Carga>('cargando')
   const [prospectos, setProspectos] = useState<Prospecto[]>([])
   const [guardando, setGuardando] = useState<ReadonlySet<number>>(new Set())
   const [aviso, setAviso] = useState<Aviso | null>(null)
+  const [cierre, setCierre] = useState<Cierre | null>(null)
 
   useEffect(() => {
     const control = new AbortController()
@@ -72,7 +85,37 @@ function ListaProspectos({ vendedores }: Props) {
     })
   }
 
-  async function manejarCambioEtapa(prospecto: Prospecto, etapa: Etapa) {
+  function elegirEtapa(prospecto: Prospecto, etapa: Etapa) {
+    // Cerrar exige motivo (decisión del PO): primero se pide y luego se guarda.
+    if (etapa === 'CERRADO') {
+      setAviso(null)
+      setCierre({ prospectoId: prospecto.id, motivo: '', faltaMotivo: false })
+      return
+    }
+    setCierre(null)
+    manejarCambioEtapa(prospecto, etapa)
+  }
+
+  function confirmarCierre(
+    evento: FormEvent<HTMLFormElement>,
+    prospecto: Prospecto,
+  ) {
+    evento.preventDefault()
+    if (!cierre) return
+    const motivo = cierre.motivo.trim()
+    if (!motivo) {
+      setCierre({ ...cierre, faltaMotivo: true })
+      return
+    }
+    setCierre(null)
+    manejarCambioEtapa(prospecto, 'CERRADO', motivo)
+  }
+
+  async function manejarCambioEtapa(
+    prospecto: Prospecto,
+    etapa: Etapa,
+    motivoCierre?: string,
+  ) {
     const anterior = prospecto.etapa
     const actualizarEtapa = (nueva: Etapa) =>
       setProspectos((lista) =>
@@ -85,7 +128,7 @@ function ListaProspectos({ vendedores }: Props) {
     setAviso(null)
 
     try {
-      const actualizado = await cambiarEtapa(prospecto.id, etapa)
+      const actualizado = await cambiarEtapa(prospecto.id, etapa, motivoCierre)
       setProspectos((lista) =>
         lista
           .map((p) => (p.id === actualizado.id ? actualizado : p))
@@ -210,26 +253,84 @@ function ListaProspectos({ vendedores }: Props) {
                     Registrado el{' '}
                     {formatoFecha.format(new Date(prospecto.creadoEn))}
                   </p>
+                  {prospecto.etapa === 'CERRADO' && prospecto.motivoCierre && (
+                    <p className="motivo">
+                      Motivo de cierre: {prospecto.motivoCierre}
+                    </p>
+                  )}
                 </div>
-                <div className="etapa">
-                  <label htmlFor={idSelector} className="solo-lector">
-                    Etapa de {prospecto.nombre}
-                  </label>
-                  <select
-                    id={idSelector}
-                    value={prospecto.etapa}
-                    disabled={guardando.has(prospecto.id)}
-                    onChange={(e) =>
-                      manejarCambioEtapa(prospecto, e.target.value as Etapa)
-                    }
+                {puedeCambiarEtapa ? (
+                  <div className="etapa">
+                    <label htmlFor={idSelector} className="solo-lector">
+                      Etapa de {prospecto.nombre}
+                    </label>
+                    <select
+                      id={idSelector}
+                      value={prospecto.etapa}
+                      disabled={
+                        guardando.has(prospecto.id) ||
+                        cierre?.prospectoId === prospecto.id
+                      }
+                      onChange={(e) =>
+                        elegirEtapa(prospecto, e.target.value as Etapa)
+                      }
+                    >
+                      {ETAPAS.map((etapa) => (
+                        <option key={etapa} value={etapa}>
+                          {NOMBRES_ETAPA[etapa]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <p className="etapa etapa-texto">
+                    <span className="etiqueta">Etapa</span>{' '}
+                    {NOMBRES_ETAPA[prospecto.etapa]}
+                  </p>
+                )}
+                {cierre?.prospectoId === prospecto.id && (
+                  <form
+                    className="cierre"
+                    onSubmit={(e) => confirmarCierre(e, prospecto)}
+                    noValidate
                   >
-                    {ETAPAS.map((etapa) => (
-                      <option key={etapa} value={etapa}>
-                        {NOMBRES_ETAPA[etapa]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    <label htmlFor={`motivo-${prospecto.id}`}>
+                      Motivo de cierre de {prospecto.nombre}
+                    </label>
+                    <input
+                      id={`motivo-${prospecto.id}`}
+                      value={cierre.motivo}
+                      maxLength={200}
+                      autoFocus
+                      onChange={(e) =>
+                        setCierre({ ...cierre, motivo: e.target.value })
+                      }
+                      aria-invalid={cierre.faltaMotivo ? true : undefined}
+                      aria-describedby={
+                        cierre.faltaMotivo
+                          ? `error-motivo-${prospecto.id}`
+                          : undefined
+                      }
+                    />
+                    {cierre.faltaMotivo && (
+                      <p id={`error-motivo-${prospecto.id}`} className="error">
+                        Escribe el motivo de cierre.
+                      </p>
+                    )}
+                    <div className="acciones-cierre">
+                      <button
+                        type="button"
+                        className="boton-secundario"
+                        onClick={() => setCierre(null)}
+                      >
+                        Cancelar
+                      </button>
+                      <button type="submit" className="boton-primario">
+                        Cerrar prospecto
+                      </button>
+                    </div>
+                  </form>
+                )}
                 {vendedores && (
                   <div className="vendedor">
                     <label

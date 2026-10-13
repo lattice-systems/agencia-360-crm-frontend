@@ -36,4 +36,8 @@ export interface Prospecto {
   etapa: Etapa
   vendedorId: number
   creadoEn: string
+  /** Solo si está cerrado. */
+  motivoCierre?: string | null
+  /** Etapa en la que estaba al cerrarse; solo si está cerrado. */
+  ultimaEtapa?: Etapa | null
 }

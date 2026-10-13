@@ -9,8 +9,8 @@ import {
 import { actorDe, handlersAcceso } from './acceso.ts'
 import { handlersReasignacion } from './reasignacion.ts'
 
-// Simula el backend mientras los endpoints de prospectos no existen.
-// Sigue el borrador de contrato de Coper (Sprints/borradores-coper).
+// Simula los endpoints de prospectos de ventascrm con las mismas reglas que el
+// backend, para las pruebas y para `npm run dev` sin backend.
 
 function apiError(
   status: number,
@@ -59,21 +59,21 @@ export const handlers = [
         URL_PROSPECTOS,
       )
     }
+    if (datos.telefono && !/^\d{10}$/.test(datos.telefono)) {
+      return apiError(
+        400,
+        'Bad Request',
+        'El teléfono debe tener 10 dígitos',
+        URL_PROSPECTOS,
+      )
+    }
 
-    // PENDIENTE P1: se simula que el duplicado bloquea con 409.
-    const repetido = todosLosProspectos().some(
+    // Decisión del PO: un contacto repetido no bloquea; solo se avisa.
+    const contactoRepetido = todosLosProspectos().some(
       (p) =>
         (datos.telefono && p.telefono === datos.telefono) ||
         (datos.correo && p.correo === datos.correo),
     )
-    if (repetido) {
-      return apiError(
-        409,
-        'Conflict',
-        'Ya existe un prospecto con ese teléfono o correo',
-        URL_PROSPECTOS,
-      )
-    }
 
     const prospecto = agregarProspecto({
       nombre: datos.nombre.trim(),
@@ -84,19 +84,54 @@ export const handlers = [
       vendedorId: actorDe(request)?.uid ?? 1,
       creadoEn: new Date().toISOString(),
     })
-    return HttpResponse.json(prospecto, { status: 201 })
+    return HttpResponse.json(
+      { ...prospecto, contactoRepetido },
+      { status: 201 },
+    )
   }),
 
   http.patch(`${URL_PROSPECTOS}/:id/etapa`, async ({ params, request }) => {
     const ruta = `${URL_PROSPECTOS}/${params.id}/etapa`
+    // Decisión del PO: solo el vendedor cambia la etapa.
+    const actor = actorDe(request)
+    if (actor && !actor.roles.includes('VENTAS')) {
+      return apiError(
+        403,
+        'Forbidden',
+        'No tienes permiso para esta operación',
+        ruta,
+      )
+    }
     const prospecto = buscarProspecto(Number(params.id))
     if (!prospecto) {
       return apiError(404, 'Not Found', 'Prospecto no encontrado', ruta)
     }
 
-    const { etapa } = (await request.json()) as { etapa?: unknown }
+    const { etapa, motivoCierre } = (await request.json()) as {
+      etapa?: unknown
+      motivoCierre?: unknown
+    }
     if (!esEtapa(etapa)) {
       return apiError(400, 'Bad Request', 'Etapa no válida', ruta)
+    }
+    if (etapa === prospecto.etapa) {
+      return HttpResponse.json(prospecto)
+    }
+    if (etapa === 'CERRADO') {
+      const motivo = typeof motivoCierre === 'string' ? motivoCierre.trim() : ''
+      if (!motivo) {
+        return apiError(
+          400,
+          'Bad Request',
+          'El motivo de cierre es obligatorio',
+          ruta,
+        )
+      }
+      prospecto.motivoCierre = motivo
+      prospecto.ultimaEtapa = prospecto.etapa
+    } else if (prospecto.etapa === 'CERRADO') {
+      prospecto.motivoCierre = null
+      prospecto.ultimaEtapa = null
     }
 
     prospecto.etapa = etapa
