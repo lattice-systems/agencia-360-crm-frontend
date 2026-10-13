@@ -1,186 +1,165 @@
+/*
+ * Tema de Agencia360 según la guía de estilos (estilos.pdf, secciones 2 a 5).
+ *
+ * Orden de capas: el CSS anterior de prospectos (capa "anteriores") queda por
+ * debajo de los componentes y utilidades de Tailwind, así que nunca pisa una
+ * pantalla nueva. Se borra cuando la lista y el registro de prospectos se
+ * migren a shadcn/ui.
+ */
+@layer theme, base, anteriores, components, utilities;
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./shadcn.css";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+@import "./estilos-anteriores.css" layer(anteriores);
+
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  --fondo: #f3f4f6;
-  --superficie: #ffffff;
-  --texto: #1f2933;
-  --texto-secundario: #52606d;
-  --borde: #cbd2d9;
-  --borde-suave: #e4e7eb;
-  --primario: #1d3557;
-  --primario-hover: #142640;
-  --primario-suave: #e8edf4;
-  --encabezado: #1d3557;
+  --radius: 0.5rem;
+
+  --background: #f5f7fa;
+  --foreground: #1f2933;
+  --card: #ffffff;
+  --card-foreground: #1f2933;
+  --popover: #ffffff;
+  --popover-foreground: #1f2933;
+
+  --primary: #1d3557;
+  --primary-hover: #142640;
+  --primary-foreground: #ffffff;
+  --secondary: #edf0f4;
+  --secondary-foreground: #1d3557;
+  --muted: #edf0f4;
+  --muted-foreground: #52606d;
+  --accent: #e8edf4;
+  --accent-foreground: #1d3557;
+  --destructive: #b42318;
+
+  --border: #e2e7ee;
+  --input: #cbd2dc;
+  --ring: #1d3557;
+
+  --chart-1: #1d3557;
+  --chart-2: #168f84;
+  --chart-3: #d08a1e;
+  --chart-4: #7fa6d6;
+  --chart-5: #6b7a90;
+
+  /*
+   * Menú lateral izquierdo, igual que en el ERP.
+   * La guía no trae estos tokens; salen de su paleta: fondo Azul Agencia,
+   * sección activa en Azul profundo y acento Turquesa 360 sobre fondo oscuro.
+   */
+  --sidebar: #1d3557;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #2ec4b6;
+  --sidebar-primary-foreground: #1d3557;
+  --sidebar-accent: #142640;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2c4870;
+  --sidebar-ring: #2ec4b6;
+
+  /* Propios de Agencia360 */
+  --marca-acento: #2ec4b6;
+  --marca-acento-claro: #168f84;
   --exito: #1b6e3a;
   --exito-fondo: #eaf5ee;
   --advertencia: #8a5a00;
   --advertencia-fondo: #fdf6e3;
-  --peligro: #b42318;
   --peligro-fondo: #fdecea;
-  --radio: 4px;
-
-  --sans: 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
-
-  font: 15px/1.5 var(--sans);
-  color-scheme: light dark;
-  color: var(--texto);
-  background: var(--fondo);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fondo: #111418;
-    --superficie: #1a1f25;
-    --texto: #e4e7eb;
-    --texto-secundario: #9aa5b1;
-    --borde: #3e4c59;
-    --borde-suave: #2a333d;
-    --primario: #7fa6d6;
-    --primario-hover: #a3c0e4;
-    --primario-suave: #1f2c3d;
-    --encabezado: #0d1824;
-    --exito: #7cc897;
-    --exito-fondo: #14261b;
-    --advertencia: #e6b450;
-    --advertencia-fondo: #2b2310;
-    --peligro: #f28b82;
-    --peligro-fondo: #2d1513;
+.dark {
+  --background: #0f1724;
+  --foreground: #e5e9f0;
+  --card: #172131;
+  --card-foreground: #e5e9f0;
+  --popover: #172131;
+  --popover-foreground: #e5e9f0;
+  --primary: #7fa6d6;
+  --primary-hover: #a3bfe2;
+  --primary-foreground: #0f1724;
+  --secondary: #1f2c3d;
+  --secondary-foreground: #e5e9f0;
+  --muted: #1f2c3d;
+  --muted-foreground: #9aa7b8;
+  --accent: #1f2c3d;
+  --accent-foreground: #e5e9f0;
+  --destructive: #f28b82;
+  --border: #2a3647;
+  --input: #3e4c59;
+  --ring: #7fa6d6;
+  --sidebar: #172131;
+  --sidebar-foreground: #e5e9f0;
+  --sidebar-accent: #1f2c3d;
+  --sidebar-accent-foreground: #e5e9f0;
+  --sidebar-border: #2a3647;
+  --exito: #7cc897;
+  --exito-fondo: #14261b;
+  --advertencia: #e6b450;
+  --advertencia-fondo: #2b2310;
+  --peligro-fondo: #2d1513;
+}
+
+@theme inline {
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-marca-acento: var(--marca-acento);
+  --color-marca-acento-claro: var(--marca-acento-claro);
+  --color-exito: var(--exito);
+  --color-exito-fondo: var(--exito-fondo);
+  --color-advertencia: var(--advertencia);
+  --color-advertencia-fondo: var(--advertencia-fondo);
+  --color-peligro-fondo: var(--peligro-fondo);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  min-height: 100svh;
-}
-
-h1,
-h2 {
-  margin: 0;
-  font-weight: 600;
-  color: var(--texto);
-}
-
-h2 {
-  font-size: 18px;
-  line-height: 1.3;
-}
-
-p {
-  margin: 0;
-}
-
-/* Controles de formulario compartidos por las pantallas del CRM. */
-input,
-select,
-button {
-  font: inherit;
-}
-
-input,
-select {
-  /* 16px evita que iOS haga zoom al enfocar el control. */
-  font-size: 16px;
-  min-height: 40px;
-  padding: 6px 10px;
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  background: var(--superficie);
-  color: var(--texto);
-  box-sizing: border-box;
-
-  &:focus-visible {
-    outline: 2px solid var(--primario);
-    outline-offset: 0;
-    border-color: var(--primario);
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
   }
-
-  &[aria-invalid='true'] {
-    border-color: var(--peligro);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: progress;
-  }
-}
-
-.boton-primario,
-.boton-secundario {
-  min-height: 40px;
-  padding: 6px 18px;
-  border-radius: var(--radio);
-  font-weight: 600;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid var(--primario);
-    outline-offset: 2px;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: progress;
-  }
-}
-
-.boton-primario {
-  border: 1px solid var(--primario);
-  background: var(--primario);
-  color: #fff;
-
-  &:hover:not(:disabled) {
-    background: var(--primario-hover);
-  }
-}
-
-.boton-secundario {
-  border: 1px solid var(--borde);
-  background: var(--superficie);
-  color: var(--texto);
-
-  &:hover:not(:disabled) {
-    border-color: var(--texto-secundario);
-  }
-}
-
-/* Mensajes de resultado: fondo tenue y borde del mismo tono. */
-.aviso {
-  margin: 0;
-  padding: 10px 12px;
-  border: 1px solid;
-  border-radius: var(--radio);
-  color: var(--texto);
-}
-
-.aviso-exito {
-  border-color: color-mix(in srgb, var(--exito) 35%, transparent);
-  background: var(--exito-fondo);
-}
-
-.aviso-duplicado {
-  border-color: color-mix(in srgb, var(--advertencia) 35%, transparent);
-  background: var(--advertencia-fondo);
-}
-
-.aviso-error {
-  border-color: color-mix(in srgb, var(--peligro) 35%, transparent);
-  background: var(--peligro-fondo);
-}
-
-.solo-lector {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
 }

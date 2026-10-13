@@ -8,7 +8,6 @@ import { ProspectosPage } from './paginas/ProspectosPage.tsx'
 import { UsuariosPage } from './paginas/UsuariosPage.tsx'
 import RegistroProspectoForm from './prospectos/RegistroProspectoForm.tsx'
 import { SesionProvider } from './sesion/SesionProvider.tsx'
-import './App.css'
 
 function App() {
   return (
@@ -27,7 +26,9 @@ function App() {
             path="prospectos"
             element={
               <RutaProtegida roles={rolesDe('/prospectos')}>
-                <ProspectosPage />
+                <div className="estilo-anterior">
+                  <ProspectosPage />
+                </div>
               </RutaProtegida>
             }
           />
@@ -35,7 +36,9 @@ function App() {
             path="registrar"
             element={
               <RutaProtegida roles={rolesDe('/registrar')}>
-                <RegistroProspectoForm />
+                <div className="estilo-anterior">
+                  <RegistroProspectoForm />
+                </div>
               </RutaProtegida>
             }
           />

@@ -8,10 +8,10 @@ describe('App', () => {
     renderApp('/')
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Agencia360 · CRM' }),
+      screen.getByRole('heading', { level: 1, name: 'Iniciar sesión' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Iniciar sesión' }),
+      screen.getByRole('button', { name: 'Entrar al CRM' }),
     ).toBeInTheDocument()
   })
 
@@ -19,7 +19,7 @@ describe('App', () => {
     renderApp('/no-existe')
 
     expect(
-      screen.getByRole('button', { name: 'Iniciar sesión' }),
+      screen.getByRole('button', { name: 'Entrar al CRM' }),
     ).toBeInTheDocument()
   })
 

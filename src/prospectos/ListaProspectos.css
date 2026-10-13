@@ -87,9 +87,21 @@
     font-size: 13px;
   }
 
-  .etapa select,
-  .vendedor select {
+  .etapa select {
     width: 100%;
+  }
+
+  /* CRM-0.1: vendedor a cargo y botón para reasignar (solo el gerente). */
+  .vendedor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .nombre-vendedor {
+    color: var(--texto-secundario);
+    font-size: 14px;
   }
 
   .motivo {
@@ -153,8 +165,7 @@
       flex: 1;
     }
 
-    .etapa select,
-    .vendedor select {
+    .etapa select {
       width: 200px;
     }
   }

@@ -16,10 +16,14 @@ export function InicioPage() {
   }
 
   return (
-    <section className="pagina">
-      <h2>Hola, {sesion.nombre}</h2>
-      <p>Rol: {NOMBRE_ROL[sesion.rol]}</p>
-      <p className="ayuda">
+    <section className="flex flex-col gap-1">
+      <h1 className="text-2xl font-semibold text-primary">
+        Hola, {sesion.nombre}
+      </h1>
+      <p className="text-sm text-muted-foreground">
+        Rol: {NOMBRE_ROL[sesion.rol]}
+      </p>
+      <p className="py-12 text-center text-muted-foreground">
         Todavía no hay secciones del CRM disponibles para tu rol.
       </p>
     </section>

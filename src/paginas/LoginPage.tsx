@@ -1,9 +1,22 @@
+import { ClipboardList, ShieldCheck, Users, type LucideIcon } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 import { iniciarSesion } from '../api/acceso.ts'
 import { mensajeDeError } from '../api/cliente.ts'
+import { CampoContrasena } from '../componentes/CampoContrasena.tsx'
 import { useSesion } from '../sesion/useSesion.ts'
 
+const BENEFICIOS: { icono: LucideIcon; texto: string }[] = [
+  { icono: Users, texto: 'Prospectos a tu alcance' },
+  { icono: ClipboardList, texto: 'Seguimiento por etapas' },
+  { icono: ShieldCheck, texto: 'Información según tu rol' },
+]
+
+/** Inicio de sesión del CRM (CRM-0.1): panel de marca a la izquierda y formulario. */
 export function LoginPage() {
   const { sesion, aviso, iniciar } = useSesion()
   const navegar = useNavigate()
@@ -42,41 +55,87 @@ export function LoginPage() {
   }
 
   return (
-    <main className="login">
-      <form className="tarjeta-login" onSubmit={enviar} noValidate>
-        <h1>Agencia360 · CRM</h1>
-        <p className="ayuda">Inicia sesión con tu cuenta del CRM.</p>
-        {aviso && (
-          <p role="status" className="aviso aviso-duplicado">
-            {aviso}
-          </p>
-        )}
-        <label htmlFor="usuario">Usuario</label>
-        <input
-          id="usuario"
-          name="usuario"
-          autoComplete="username"
-          value={usuario}
-          onChange={(e) => setUsuario(e.target.value)}
-        />
-        <label htmlFor="contrasena">Contraseña</label>
-        <input
-          id="contrasena"
-          name="contrasena"
-          type="password"
-          autoComplete="current-password"
-          value={contrasena}
-          onChange={(e) => setContrasena(e.target.value)}
-        />
-        {error && (
-          <p role="alert" className="aviso aviso-error">
-            {error}
-          </p>
-        )}
-        <button type="submit" className="boton-primario" disabled={enviando}>
-          {enviando ? 'Entrando…' : 'Iniciar sesión'}
-        </button>
-      </form>
+    <main className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <aside className="hidden flex-col bg-primary p-12 text-primary-foreground lg:flex">
+        <img src="/agencia360-logo-blanco.svg" alt="Agencia360" className="h-auto w-[240px]" />
+        <span className="mt-8 w-fit rounded-full bg-white/10 px-3 py-1 text-sm text-marca-acento">
+          Agencia360 · CRM
+        </span>
+        <p className="mt-8 text-4xl font-bold">Todo en su lugar.</p>
+        <p className="mt-4 max-w-sm text-xl text-primary-foreground/85">
+          Gestiona tus prospectos y da continuidad a cada contacto.
+        </p>
+        <div aria-hidden="true" className="my-10 h-px max-w-md bg-white/15" />
+        <ul className="flex flex-col gap-6">
+          {BENEFICIOS.map(({ icono: Icono, texto }) => (
+            <li key={texto} className="flex items-center gap-3 text-lg">
+              <Icono aria-hidden="true" className="size-5" />
+              {texto}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-auto text-sm text-primary-foreground/75">
+          Una identidad. Cada área conectada.
+        </p>
+      </aside>
+
+      <div className="flex flex-col px-4 py-10 sm:px-10 lg:px-16">
+        <div className="my-auto w-full max-w-md lg:mx-auto">
+          <img
+            src="/agencia360-logo.svg"
+            alt="Agencia360"
+            className="mb-10 h-auto w-[200px] lg:hidden"
+          />
+          <h1 className="text-3xl font-bold text-primary">Iniciar sesión</h1>
+          <p className="mt-2 text-muted-foreground">Accede a Agencia360 · CRM</p>
+
+          <form onSubmit={enviar} noValidate className="mt-8">
+            <FieldGroup className="gap-5">
+              {aviso && (
+                <Alert variant="advertencia" role="status">
+                  <AlertDescription>{aviso}</AlertDescription>
+                </Alert>
+              )}
+              <Field>
+                <FieldLabel htmlFor="usuario">Usuario</FieldLabel>
+                <Input
+                  id="usuario"
+                  name="usuario"
+                  autoComplete="username"
+                  className="h-11"
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value)}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="contrasena">Contraseña</FieldLabel>
+                <CampoContrasena
+                  id="contrasena"
+                  name="contrasena"
+                  autoComplete="current-password"
+                  className="h-11"
+                  value={contrasena}
+                  onChange={(e) => setContrasena(e.target.value)}
+                />
+              </Field>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <Button type="submit" className="mt-2 h-11 w-full" disabled={enviando}>
+                {enviando ? 'Entrando…' : 'Entrar al CRM'}
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Si necesitas acceso, contacta al gerente de marketing de tu agencia.
+              </p>
+            </FieldGroup>
+          </form>
+        </div>
+        <p className="mt-10 text-xs text-muted-foreground lg:mx-auto lg:w-full lg:max-w-md">
+          Acceso exclusivo para personal autorizado.
+        </p>
+      </div>
     </main>
   )
 }

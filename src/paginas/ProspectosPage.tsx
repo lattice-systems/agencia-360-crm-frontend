@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import type { UsuarioApi } from '../api/acceso.ts'
 import { listarVendedores } from '../prospectos/reasignacion.ts'
 import ListaProspectos from '../prospectos/ListaProspectos.tsx'
@@ -33,10 +34,12 @@ export function ProspectosPage() {
   return (
     <>
       {errorVendedores && (
-        <p role="alert" className="aviso aviso-error">
-          No se pudo cargar la lista de vendedores; por ahora no se puede
-          reasignar.
-        </p>
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>
+            No se pudo cargar la lista de vendedores; por ahora no se puede
+            reasignar.
+          </AlertDescription>
+        </Alert>
       )}
       <ListaProspectos
         vendedores={vendedores ?? undefined}
