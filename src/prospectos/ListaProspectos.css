@@ -91,6 +91,46 @@
   .vendedor select {
     width: 100%;
   }
+
+  .motivo {
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  /* Etapa en solo lectura (Gerente de marketing). */
+  .etapa-texto {
+    font-size: 14px;
+
+    .etiqueta {
+      color: var(--texto-secundario);
+    }
+  }
+
+  /* Captura del motivo al cerrar un prospecto. */
+  .cierre {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-basis: 100%;
+    padding-top: 10px;
+    border-top: 1px solid var(--borde-suave);
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .error {
+      color: var(--peligro);
+      font-size: 13px;
+    }
+  }
+
+  .acciones-cierre {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
 }
 
 @media (min-width: 640px) {
@@ -103,6 +143,7 @@
 
     .renglon {
       flex-direction: row;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 24px;

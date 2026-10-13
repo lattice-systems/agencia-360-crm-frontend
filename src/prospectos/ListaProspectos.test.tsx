@@ -4,6 +4,7 @@ import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { reiniciarDatos } from '../mocks/datos.ts'
 import { server } from '../mocks/server.ts'
+import { conSesion, renderApp } from '../test/utilidades.ts'
 import { URL_PROSPECTOS } from './api.ts'
 import ListaProspectos from './ListaProspectos.tsx'
 
@@ -247,5 +248,116 @@ describe('ListaProspectos', () => {
     soltar()
     await screen.findByRole('status')
     expect(selector).toBeEnabled()
+  })
+
+  // Decisión del PO: cerrar un prospecto exige motivo.
+  describe('cierre con motivo', () => {
+    async function elegirCerradoPara(nombre: string) {
+      const { user } = renderizar()
+      const items = await filas()
+      const fila = items.find((item) => item.textContent?.includes(nombre))!
+      await user.selectOptions(
+        within(fila).getByLabelText(`Etapa de ${nombre}`),
+        'Cerrado',
+      )
+      return { user, fila }
+    }
+
+    it('pide el motivo antes de cerrar y todavía no guarda nada', async () => {
+      let peticiones = 0
+      server.use(
+        http.patch(`${URL_PROSPECTOS}/:id/etapa`, () => {
+          peticiones++
+        }),
+      )
+      const { fila } = await elegirCerradoPara('Rosa Díaz')
+
+      expect(
+        within(fila).getByLabelText('Motivo de cierre de Rosa Díaz'),
+      ).toBeVisible()
+      expect(within(fila).getByLabelText('Etapa de Rosa Díaz')).toHaveValue(
+        'PRIMER_CONTACTO',
+      )
+      expect(peticiones).toBe(0)
+    })
+
+    it('no deja cerrar sin escribir el motivo', async () => {
+      const { user, fila } = await elegirCerradoPara('Rosa Díaz')
+
+      await user.click(
+        within(fila).getByRole('button', { name: 'Cerrar prospecto' }),
+      )
+
+      expect(
+        within(fila).getByText('Escribe el motivo de cierre.'),
+      ).toBeVisible()
+      expect(
+        within(fila).getByLabelText('Motivo de cierre de Rosa Díaz'),
+      ).toHaveAttribute('aria-invalid', 'true')
+    })
+
+    it('cierra el prospecto mandando el motivo', async () => {
+      let recibido: unknown
+      server.use(
+        http.patch(`${URL_PROSPECTOS}/:id/etapa`, async ({ request }) => {
+          recibido = await request.clone().json()
+        }),
+      )
+      const { user, fila } = await elegirCerradoPara('Rosa Díaz')
+
+      await user.type(
+        within(fila).getByLabelText('Motivo de cierre de Rosa Díaz'),
+        'Compró en otra agencia',
+      )
+      await user.click(
+        within(fila).getByRole('button', { name: 'Cerrar prospecto' }),
+      )
+
+      expect(await screen.findByRole('status')).toHaveTextContent(
+        'Rosa Díaz pasó a la etapa Cerrado.',
+      )
+      expect(recibido).toEqual({
+        etapa: 'CERRADO',
+        motivoCierre: 'Compró en otra agencia',
+      })
+      expect(fila).toHaveTextContent('Motivo de cierre: Compró en otra agencia')
+    })
+
+    it('cancelar deja el prospecto como estaba', async () => {
+      const { user, fila } = await elegirCerradoPara('Rosa Díaz')
+
+      await user.click(within(fila).getByRole('button', { name: 'Cancelar' }))
+
+      expect(
+        within(fila).queryByLabelText('Motivo de cierre de Rosa Díaz'),
+      ).not.toBeInTheDocument()
+      expect(within(fila).getByLabelText('Etapa de Rosa Díaz')).toHaveValue(
+        'PRIMER_CONTACTO',
+      )
+      expect(within(fila).getByLabelText('Etapa de Rosa Díaz')).toBeEnabled()
+    })
+  })
+
+  // Decisión del PO: el Gerente de marketing ve las etapas pero no las cambia.
+  describe('Gerente de marketing', () => {
+    it('ve la etapa de cada prospecto sin poder cambiarla', async () => {
+      conSesion('GERENTE_MARKETING', { uid: 10 })
+      renderApp('/prospectos')
+
+      const items = await filas()
+      const rosa = items.find((item) => item.textContent?.includes('Rosa Díaz'))!
+      expect(rosa).toHaveTextContent('Etapa Primer contacto')
+      expect(
+        within(rosa).queryByLabelText('Etapa de Rosa Díaz'),
+      ).not.toBeInTheDocument()
+    })
+
+    it('el vendedor sí puede cambiar la etapa', async () => {
+      conSesion('VENTAS')
+      renderApp('/prospectos')
+
+      const [primera] = await filas()
+      expect(within(primera).getByRole('combobox', { name: /^Etapa de/ })).toBeEnabled()
+    })
   })
 })

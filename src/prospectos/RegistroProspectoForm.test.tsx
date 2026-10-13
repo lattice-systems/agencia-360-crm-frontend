@@ -115,29 +115,104 @@ describe('RegistroProspectoForm', () => {
     expect(telefono).toHaveValue('')
   })
 
-  it('avisa si el teléfono ya existe', async () => {
+  // Decisión del PO: un contacto repetido no bloquea; se registra y se avisa.
+  it('registra aunque el teléfono ya exista y lo avisa', async () => {
     const { user, nombre, telefono, registrar } = renderizar()
 
     await user.type(nombre, 'Ana López')
     await user.type(telefono, TELEFONO_REPETIDO)
     await user.click(registrar)
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Ya existe un prospecto con ese teléfono o correo.',
+    const aviso = await screen.findByRole('status')
+    expect(aviso).toHaveTextContent('Se registró a Ana López')
+    expect(aviso).toHaveTextContent(
+      'Aviso: ya existe otro prospecto con ese teléfono o correo.',
     )
-    // Conserva lo capturado para que el vendedor pueda corregirlo.
-    expect(telefono).toHaveValue(TELEFONO_REPETIDO)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(telefono).toHaveValue('')
   })
 
-  it('avisa si el correo ya existe', async () => {
+  it('registra aunque el correo ya exista y lo avisa', async () => {
     const { user, nombre, correo, registrar } = renderizar()
 
     await user.type(nombre, 'Ana López')
     await user.type(correo, CORREO_REPETIDO)
     await user.click(registrar)
 
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'ya existe otro prospecto con ese teléfono o correo.',
+    )
+  })
+
+  it('no muestra el aviso de repetido cuando el contacto es nuevo', async () => {
+    const { user, nombre, telefono, registrar } = renderizar()
+
+    await user.type(nombre, 'Ana López')
+    await user.type(telefono, '4771234567')
+    await user.click(registrar)
+
+    expect(await screen.findByRole('status')).not.toHaveTextContent('Aviso')
+  })
+
+  it('pide un teléfono de 10 dígitos', async () => {
+    const { user, nombre, telefono, registrar } = renderizar()
+
+    await user.type(nombre, 'Ana López')
+    await user.type(telefono, '477123')
+    await user.click(registrar)
+
+    expect(screen.getByText('El teléfono debe tener 10 dígitos.')).toBeVisible()
+    expect(telefono).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('acepta el teléfono con espacios o guiones y manda solo los dígitos', async () => {
+    let recibido: unknown
+    server.use(
+      http.post(URL_PROSPECTOS, async ({ request }) => {
+        recibido = await request.json()
+        return HttpResponse.json(
+          {
+            id: 9,
+            nombre: 'Ana López',
+            telefono: '4771234567',
+            correo: null,
+            etapa: 'PRIMER_CONTACTO',
+            vendedorId: 1,
+            creadoEn: '2026-10-12T15:00:00Z',
+            contactoRepetido: false,
+          },
+          { status: 201 },
+        )
+      }),
+    )
+    const { user, nombre, telefono, registrar } = renderizar()
+
+    await user.type(nombre, 'Ana López')
+    await user.type(telefono, '(477) 123-45 67')
+    await user.click(registrar)
+
+    await screen.findByRole('status')
+    expect(recibido).toEqual({ nombre: 'Ana López', telefono: '4771234567' })
+  })
+
+  it('muestra el mensaje del servidor cuando rechaza los datos', async () => {
+    server.use(
+      http.post(URL_PROSPECTOS, () =>
+        HttpResponse.json(
+          { status: 400, message: 'El teléfono debe tener 10 dígitos' },
+          { status: 400 },
+        ),
+      ),
+    )
+    const { user, nombre, telefono, registrar } = renderizar()
+
+    await user.type(nombre, 'Ana López')
+    await user.type(telefono, '4771234567')
+    await user.click(registrar)
+
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Ya existe un prospecto con ese teléfono o correo.',
+      'El teléfono debe tener 10 dígitos',
     )
   })
 

@@ -1,19 +1,19 @@
 import { useState, type FormEvent } from 'react'
-import { registrarProspecto } from './api.ts'
-import { NOMBRES_ETAPA, type Prospecto, type ProspectoNuevo } from './tipos.ts'
+import { registrarProspecto, type ResultadoRegistro } from './api.ts'
+import { NOMBRES_ETAPA, type ProspectoNuevo } from './tipos.ts'
 import './RegistroProspectoForm.css'
 
 interface Errores {
   nombre?: string
+  telefono?: string
   contacto?: string
 }
 
-type Aviso =
-  | { tipo: 'creado'; prospecto: Prospecto }
-  | { tipo: 'duplicado' }
-  | { tipo: 'error' }
+// Se aceptan espacios, guiones, puntos y paréntesis al capturar el teléfono.
+const SEPARADORES_TELEFONO = /[\s().-]/g
 
-// CRM-1.0: nombre obligatorio y además teléfono o correo.
+// CRM-1.0: nombre obligatorio y además teléfono o correo. El teléfono es de
+// México a 10 dígitos (decisión del PO del 12 de octubre).
 function validar(datos: ProspectoNuevo): Errores {
   const errores: Errores = {}
   if (!datos.nombre) {
@@ -21,6 +21,9 @@ function validar(datos: ProspectoNuevo): Errores {
   }
   if (!datos.telefono && !datos.correo) {
     errores.contacto = 'Escribe al menos un teléfono o un correo.'
+  }
+  if (datos.telefono && !/^\d{10}$/.test(datos.telefono)) {
+    errores.telefono = 'El teléfono debe tener 10 dígitos.'
   }
   return errores
 }
@@ -30,16 +33,18 @@ function RegistroProspectoForm() {
   const [telefono, setTelefono] = useState('')
   const [correo, setCorreo] = useState('')
   const [errores, setErrores] = useState<Errores>({})
-  const [aviso, setAviso] = useState<Aviso | null>(null)
+  const [aviso, setAviso] = useState<ResultadoRegistro | null>(null)
   const [enviando, setEnviando] = useState(false)
 
   async function manejarEnvio(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     setAviso(null)
 
-    // Solo se mandan los campos que traen algo, sin espacios sobrantes.
+    // Solo se mandan los campos que traen algo, sin espacios sobrantes; el
+    // teléfono va solo con sus dígitos.
     const datos: ProspectoNuevo = { nombre: nombre.trim() }
-    if (telefono.trim()) datos.telefono = telefono.trim()
+    const digitosTelefono = telefono.replace(SEPARADORES_TELEFONO, '')
+    if (digitosTelefono) datos.telefono = digitosTelefono
     if (correo.trim()) datos.correo = correo.trim()
 
     const nuevosErrores = validar(datos)
@@ -102,8 +107,14 @@ function RegistroProspectoForm() {
             autoComplete="tel"
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
-            aria-invalid={errores.contacto ? true : undefined}
+            aria-invalid={errores.contacto || errores.telefono ? true : undefined}
+            aria-describedby={errores.telefono ? 'error-telefono' : undefined}
           />
+          {errores.telefono && (
+            <p id="error-telefono" className="error">
+              {errores.telefono}
+            </p>
+          )}
         </div>
 
         <div className="campo">
@@ -134,14 +145,19 @@ function RegistroProspectoForm() {
       </div>
 
       {aviso?.tipo === 'creado' && (
-        <p role="status" className="aviso aviso-exito">
+        <p
+          role="status"
+          className={`aviso ${aviso.contactoRepetido ? 'aviso-duplicado' : 'aviso-exito'}`}
+        >
           Se registró a {aviso.prospecto.nombre} en la etapa{' '}
           {NOMBRES_ETAPA[aviso.prospecto.etapa]}.
+          {aviso.contactoRepetido &&
+            ' Aviso: ya existe otro prospecto con ese teléfono o correo.'}
         </p>
       )}
-      {aviso?.tipo === 'duplicado' && (
-        <p role="alert" className="aviso aviso-duplicado">
-          Ya existe un prospecto con ese teléfono o correo.
+      {aviso?.tipo === 'invalido' && (
+        <p role="alert" className="aviso aviso-error">
+          {aviso.mensaje}
         </p>
       )}
       {aviso?.tipo === 'error' && (

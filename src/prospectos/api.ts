@@ -1,16 +1,26 @@
 import { fetchApi } from '../api/cliente.ts'
 import type { Etapa, Prospecto, ProspectoNuevo } from './tipos.ts'
 
-// PROPUESTA: la ruta todavía no está definida en el backend.
-// Sale del borrador de prospectos de Coper (/api/v1/prospectos).
+// Endpoints de ventascrm en el backend (CRM-1.0 y CRM-1.1).
 export const URL_PROSPECTOS = '/api/v1/prospectos'
 
 const CABECERAS_JSON = { 'Content-Type': 'application/json' }
 
 export type ResultadoRegistro =
-  | { tipo: 'creado'; prospecto: Prospecto }
-  | { tipo: 'duplicado' }
+  | { tipo: 'creado'; prospecto: Prospecto; contactoRepetido: boolean }
+  | { tipo: 'invalido'; mensaje: string }
   | { tipo: 'error' }
+
+const MENSAJE_INVALIDO = 'Revisa los datos del prospecto.'
+
+async function mensajeDe(respuesta: Response): Promise<string> {
+  try {
+    const { message } = (await respuesta.json()) as { message?: unknown }
+    return typeof message === 'string' && message ? message : MENSAJE_INVALIDO
+  } catch {
+    return MENSAJE_INVALIDO
+  }
+}
 
 export async function registrarProspecto(
   datos: ProspectoNuevo,
@@ -23,12 +33,14 @@ export async function registrarProspecto(
     })
 
     if (respuesta.status === 201) {
-      return { tipo: 'creado', prospecto: (await respuesta.json()) as Prospecto }
+      // Decisión del PO: un teléfono o correo repetido no bloquea; el backend
+      // registra y solo avisa con contactoRepetido.
+      const { contactoRepetido, ...prospecto } =
+        (await respuesta.json()) as Prospecto & { contactoRepetido: boolean }
+      return { tipo: 'creado', prospecto, contactoRepetido }
     }
-    // PENDIENTE P1: falta que el PO diga si el duplicado bloquea o solo avisa.
-    // Por ahora se asume que el backend responde 409.
-    if (respuesta.status === 409) {
-      return { tipo: 'duplicado' }
+    if (respuesta.status === 400) {
+      return { tipo: 'invalido', mensaje: await mensajeDe(respuesta) }
     }
     return { tipo: 'error' }
   } catch {
@@ -52,14 +64,18 @@ export async function listarProspectos(
 }
 
 // CRM-1.1: el servidor registra el cambio con fecha y hora en el historial.
+// Para pasar a Cerrado el motivo es obligatorio (decisión del PO).
 export async function cambiarEtapa(
   id: number,
   etapa: Etapa,
+  motivoCierre?: string,
 ): Promise<Prospecto> {
   const respuesta = await fetchApi(`${URL_PROSPECTOS}/${id}/etapa`, {
     method: 'PATCH',
     headers: CABECERAS_JSON,
-    body: JSON.stringify({ etapa }),
+    body: JSON.stringify(
+      motivoCierre === undefined ? { etapa } : { etapa, motivoCierre },
+    ),
   })
   if (!respuesta.ok) {
     throw new Error(`No se pudo cambiar la etapa (HTTP ${respuesta.status})`)
