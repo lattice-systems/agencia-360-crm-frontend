@@ -1,3 +1,4 @@
+import { fetchApi } from '../api/cliente.ts'
 import type { Etapa, Prospecto, ProspectoNuevo } from './tipos.ts'
 
 // PROPUESTA: la ruta todavía no está definida en el backend.
@@ -15,7 +16,7 @@ export async function registrarProspecto(
   datos: ProspectoNuevo,
 ): Promise<ResultadoRegistro> {
   try {
-    const respuesta = await fetch(URL_PROSPECTOS, {
+    const respuesta = await fetchApi(URL_PROSPECTOS, {
       method: 'POST',
       headers: CABECERAS_JSON,
       body: JSON.stringify(datos),
@@ -43,7 +44,7 @@ export async function listarProspectos(
   const url = etapa
     ? `${URL_PROSPECTOS}?${new URLSearchParams({ etapa })}`
     : URL_PROSPECTOS
-  const respuesta = await fetch(url, { signal })
+  const respuesta = await fetchApi(url, { signal })
   if (!respuesta.ok) {
     throw new Error(`No se pudo listar prospectos (HTTP ${respuesta.status})`)
   }
@@ -55,7 +56,7 @@ export async function cambiarEtapa(
   id: number,
   etapa: Etapa,
 ): Promise<Prospecto> {
-  const respuesta = await fetch(`${URL_PROSPECTOS}/${id}/etapa`, {
+  const respuesta = await fetchApi(`${URL_PROSPECTOS}/${id}/etapa`, {
     method: 'PATCH',
     headers: CABECERAS_JSON,
     body: JSON.stringify({ etapa }),

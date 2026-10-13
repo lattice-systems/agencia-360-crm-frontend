@@ -9,7 +9,7 @@
   .contenido {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: 0 24px;
     max-width: 960px;
@@ -24,20 +24,50 @@
     color: #fff;
   }
 
-  nav {
+  .usuario-actual {
     display: flex;
-    align-self: stretch;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+
+    button {
+      min-height: 32px;
+      padding: 0 12px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: var(--radio);
+      background: transparent;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+
+      &:hover {
+        border-color: #fff;
+      }
+
+      &:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
+      }
+    }
   }
 
-  button {
+  nav {
+    display: flex;
+    flex-basis: 100%;
+    overflow-x: auto;
+  }
+
+  nav a {
+    display: inline-flex;
+    align-items: center;
     padding: 0 16px;
     min-height: 44px;
-    border: none;
     border-bottom: 3px solid transparent;
-    background: transparent;
     color: rgba(255, 255, 255, 0.75);
     font-weight: 600;
-    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
 
     &:hover {
@@ -61,4 +91,109 @@
   margin: 0 auto;
   padding: 20px 16px max(24px, env(safe-area-inset-bottom));
   box-sizing: border-box;
+}
+
+/* Pantallas de sesión y administración (CRM-0.1). */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  h3 {
+    margin: 8px 0 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .ayuda {
+    color: var(--texto-secundario);
+  }
+}
+
+.login {
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.tarjeta-login {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 380px;
+  padding: 24px;
+  border: 1px solid var(--borde-suave);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  box-sizing: border-box;
+
+  h1 {
+    font-size: 20px;
+  }
+
+  .ayuda {
+    margin-bottom: 6px;
+    color: var(--texto-secundario);
+    font-size: 14px;
+  }
+
+  label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .boton-primario {
+    margin-top: 8px;
+  }
+}
+
+.usuarios {
+  .formulario-usuario {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    align-items: end;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--borde-suave);
+    border-radius: var(--radio);
+    background: var(--superficie);
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+  }
+
+  .tabla {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--superficie);
+    font-size: 14px;
+
+    th,
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--borde-suave);
+      text-align: left;
+    }
+
+    th {
+      color: var(--texto-secundario);
+      font-weight: 600;
+    }
+  }
+}
+
+/* En celular la tabla de usuarios se desplaza de lado en lugar de romper la página. */
+@media (max-width: 640px) {
+  .usuarios .tabla {
+    display: block;
+    overflow-x: auto;
+  }
 }
