@@ -1,0 +1,114 @@
+.lista-prospectos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  .barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 24px;
+  }
+
+  .conteo {
+    color: var(--texto-secundario);
+    font-size: 14px;
+  }
+
+  .filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 220px;
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+  }
+
+  .estado {
+    padding: 24px 16px;
+    border: 1px solid var(--borde-suave);
+    border-radius: var(--radio);
+    background: var(--superficie);
+    color: var(--texto-secundario);
+    text-align: center;
+  }
+
+  .aviso-error:has(button) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .renglones {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--borde-suave);
+    border-radius: var(--radio);
+    background: var(--superficie);
+  }
+
+  .renglon {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+
+    & + .renglon {
+      border-top: 1px solid var(--borde-suave);
+    }
+  }
+
+  .datos {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .nombre {
+    font-weight: 600;
+  }
+
+  .contacto {
+    color: var(--texto-secundario);
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+
+  .fecha {
+    color: var(--texto-secundario);
+    font-size: 13px;
+  }
+
+  .etapa select {
+    width: 100%;
+  }
+}
+
+@media (min-width: 640px) {
+  .lista-prospectos {
+    .filtro {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .renglon {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .etapa select {
+      width: 200px;
+    }
+  }
+}
