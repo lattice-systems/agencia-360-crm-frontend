@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { conSesion, renderApp } from './test/utilidades.ts'
@@ -28,29 +28,29 @@ describe('App', () => {
     renderApp('/')
 
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Prospectos' }),
+      screen.getByRole('heading', { level: 1, name: 'Mis prospectos' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Prospectos' })).toHaveAttribute(
+    expect(menuPrincipal().getByRole('link', { name: 'Prospectos' })).toHaveAttribute(
       'aria-current',
       'page',
     )
-    await screen.findByRole('list', { name: 'Prospectos' })
+    await screen.findByRole('table', { name: 'Prospectos' })
   })
 
   it('cambia al formulario de registro y de regreso a la lista', async () => {
     conSesion('VENTAS')
     const user = userEvent.setup()
     renderApp('/')
-    await screen.findByRole('list', { name: 'Prospectos' })
+    await screen.findByRole('table', { name: 'Prospectos' })
 
-    await user.click(screen.getByRole('link', { name: 'Registrar' }))
+    await user.click(menuPrincipal().getByRole('link', { name: 'Registrar' }))
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Registrar prospecto' }),
+      screen.getByRole('heading', { level: 1, name: 'Registrar prospecto' }),
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole('link', { name: 'Prospectos' }))
+    await user.click(menuPrincipal().getByRole('link', { name: 'Prospectos' }))
     expect(
-      await screen.findByRole('list', { name: 'Prospectos' }),
+      await screen.findByRole('table', { name: 'Prospectos' }),
     ).toBeInTheDocument()
   })
 
@@ -59,15 +59,18 @@ describe('App', () => {
     const user = userEvent.setup()
     renderApp('/registrar')
 
-    await user.type(screen.getByLabelText('Nombre'), 'Ana López')
+    await user.type(screen.getByLabelText(/Nombre completo/), 'Ana López')
     await user.type(screen.getByLabelText('Teléfono'), '4771234567')
     await user.click(
       screen.getByRole('button', { name: 'Registrar prospecto' }),
     )
-    await screen.findByRole('status')
 
-    await user.click(screen.getByRole('link', { name: 'Prospectos' }))
-    const lista = await screen.findByRole('list', { name: 'Prospectos' })
-    expect(lista).toHaveTextContent('Ana López')
+    // Al registrar, el CRM regresa a la lista.
+    const tabla = await screen.findByRole('table', { name: 'Prospectos' })
+    expect(tabla).toHaveTextContent('Ana López')
   })
 })
+
+function menuPrincipal() {
+  return within(screen.getByRole('navigation', { name: 'Principal' }))
+}

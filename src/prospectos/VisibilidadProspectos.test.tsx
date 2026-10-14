@@ -29,9 +29,10 @@ const DE_VICTOR: Prospecto = {
 }
 
 async function nombresEnLista() {
-  const lista = await screen.findByRole('list', { name: 'Prospectos' })
-  return within(lista)
-    .getAllByRole('listitem')
+  const tabla = await screen.findByRole('table', { name: 'Prospectos' })
+  return within(tabla)
+    .getAllByRole('row')
+    .slice(1)
     .map((fila) => fila.querySelector('.nombre')?.textContent)
 }
 
@@ -46,7 +47,7 @@ describe('Visibilidad de prospectos', () => {
     )
     renderApp('/prospectos')
 
-    await screen.findByRole('list', { name: 'Prospectos' })
+    await screen.findByRole('table', { name: 'Prospectos' })
     expect(autorizacion).toBe(`Bearer ${token}`)
   })
 

@@ -26,9 +26,7 @@ function App() {
             path="prospectos"
             element={
               <RutaProtegida roles={rolesDe('/prospectos')}>
-                <div className="estilo-anterior">
-                  <ProspectosPage />
-                </div>
+                <ProspectosPage />
               </RutaProtegida>
             }
           />
@@ -36,9 +34,7 @@ function App() {
             path="registrar"
             element={
               <RutaProtegida roles={rolesDe('/registrar')}>
-                <div className="estilo-anterior">
-                  <RegistroProspectoForm />
-                </div>
+                <RegistroProspectoForm />
               </RutaProtegida>
             }
           />
