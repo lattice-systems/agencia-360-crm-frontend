@@ -30,7 +30,7 @@ describe('Inicio de sesión', () => {
     await llenarYEnviar('vendedor1', CONTRASENA_MOCK)
 
     expect(
-      await screen.findByRole('heading', { level: 2, name: 'Prospectos' }),
+      await screen.findByRole('heading', { level: 1, name: 'Mis prospectos' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Valeria Vendedora')).toBeInTheDocument()
     expect(cuerpoEnviado).toEqual({

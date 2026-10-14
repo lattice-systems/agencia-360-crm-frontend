@@ -11,10 +11,19 @@ import { URL_PROSPECTOS } from './api.ts'
 // los prospectos son de Valeria Vendedora (vendedor1, id 1); Víctor Vendedor
 // es vendedor2 (id 2).
 
-async function abrirReasignar(nombre: string) {
+// La reasignación se abre desde el menú de cada renglón (mockup p. 17).
+async function abrirMenu(nombre: string) {
   const usuarioEvento = userEvent.setup()
   await usuarioEvento.click(
-    await screen.findByRole('button', { name: `Reasignar a ${nombre}` }),
+    await screen.findByRole('button', { name: `Acciones de ${nombre}` }),
+  )
+  return { usuarioEvento, menu: await screen.findByRole('menu') }
+}
+
+async function abrirReasignar(nombre: string) {
+  const { usuarioEvento, menu } = await abrirMenu(nombre)
+  await usuarioEvento.click(
+    await within(menu).findByRole('menuitem', { name: 'Reasignar' }),
   )
   const dialogo = await screen.findByRole('dialog', {
     name: 'Reasignar prospecto',
@@ -27,8 +36,8 @@ describe('Reasignación de prospectos', () => {
     conSesion('GERENTE_MARKETING', { uid: 10 })
     renderApp('/prospectos')
 
-    const lista = await screen.findByRole('list', { name: 'Prospectos' })
-    const fila = within(lista).getByText('Rosa Díaz').closest('li')!
+    const tabla = await screen.findByRole('table', { name: 'Prospectos' })
+    const fila = within(tabla).getByText('Rosa Díaz').closest('tr')!
     expect(
       await within(fila).findByText('Valeria Vendedora'),
     ).toBeInTheDocument()
@@ -73,7 +82,7 @@ describe('Reasignación de prospectos', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
     )
-    const fila = screen.getByText('Rosa Díaz').closest('li')!
+    const fila = screen.getByText('Rosa Díaz').closest('tr')!
     expect(within(fila).getByText('Víctor Vendedor')).toBeInTheDocument()
   })
 
@@ -124,7 +133,7 @@ describe('Reasignación de prospectos', () => {
     await usuarioEvento.click(
       within(dialogo).getByRole('button', { name: 'Cancelar' }),
     )
-    const fila = screen.getByText('Rosa Díaz').closest('li')!
+    const fila = screen.getByText('Rosa Díaz').closest('tr')!
     expect(within(fila).getByText('Valeria Vendedora')).toBeInTheDocument()
   })
 
@@ -132,9 +141,10 @@ describe('Reasignación de prospectos', () => {
     conSesion('VENTAS')
     renderApp('/prospectos')
 
-    await screen.findByRole('list', { name: 'Prospectos' })
+    await screen.findByRole('table', { name: 'Prospectos' })
+    const { menu } = await abrirMenu('Rosa Díaz')
     expect(
-      screen.queryByRole('button', { name: 'Reasignar a Rosa Díaz' }),
+      within(menu).queryByRole('menuitem', { name: 'Reasignar' }),
     ).not.toBeInTheDocument()
   })
 
@@ -150,9 +160,10 @@ describe('Reasignación de prospectos', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'No se pudo cargar la lista de vendedores',
     )
-    await screen.findByRole('list', { name: 'Prospectos' })
+    await screen.findByRole('table', { name: 'Prospectos' })
+    const { menu } = await abrirMenu('Rosa Díaz')
     expect(
-      screen.queryByRole('button', { name: 'Reasignar a Rosa Díaz' }),
+      within(menu).queryByRole('menuitem', { name: 'Reasignar' }),
     ).not.toBeInTheDocument()
   })
 })

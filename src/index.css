@@ -1,19 +1,12 @@
 /*
  * Tema de Agencia360 según la guía de estilos (estilos.pdf, secciones 2 a 5).
- *
- * Orden de capas: el CSS anterior de prospectos (capa "anteriores") queda por
- * debajo de los componentes y utilidades de Tailwind, así que nunca pisa una
- * pantalla nueva. Se borra cuando la lista y el registro de prospectos se
- * migren a shadcn/ui.
  */
-@layer theme, base, anteriores, components, utilities;
 
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./shadcn.css";
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/jetbrains-mono";
-@import "./estilos-anteriores.css" layer(anteriores);
 
 @custom-variant dark (&:is(.dark *));
 
