@@ -1,8 +1,10 @@
+import { UserRoundCog } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import type { UsuarioApi } from '../api/acceso.ts'
-import { mensajeDeError } from '../api/cliente.ts'
 import { cambiarEtapa, listarProspectos } from './api.ts'
-import { reasignarProspecto } from './reasignacion.ts'
+import { DialogoReasignar } from './DialogoReasignar.tsx'
 import { ETAPAS, NOMBRES_ETAPA, type Etapa, type Prospecto } from './tipos.ts'
 import './ListaProspectos.css'
 
@@ -49,6 +51,7 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true }: Props) {
   const [guardando, setGuardando] = useState<ReadonlySet<number>>(new Set())
   const [aviso, setAviso] = useState<Aviso | null>(null)
   const [cierre, setCierre] = useState<Cierre | null>(null)
+  const [reasignando, setReasignando] = useState<Prospecto | null>(null)
 
   useEffect(() => {
     const control = new AbortController()
@@ -150,29 +153,15 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true }: Props) {
     }
   }
 
-  async function manejarReasignacion(prospecto: Prospecto, vendedorId: number) {
-    marcarGuardando(prospecto.id, true)
-    setAviso(null)
-    try {
-      const actualizado = await reasignarProspecto(prospecto.id, vendedorId)
-      setProspectos((lista) =>
-        lista.map((p) => (p.id === actualizado.id ? actualizado : p)),
-      )
-      const nombre =
-        vendedores?.find((v) => v.id === actualizado.vendedorId)?.nombre ??
-        'otro vendedor'
-      setAviso({
-        tipo: 'exito',
-        texto: `${actualizado.nombre} ahora lo atiende ${nombre}.`,
-      })
-    } catch (error) {
-      setAviso({
-        tipo: 'error',
-        texto: `No se pudo reasignar a ${prospecto.nombre}. ${mensajeDeError(error)}`,
-      })
-    } finally {
-      marcarGuardando(prospecto.id, false)
-    }
+  function alReasignar(actualizado: Prospecto) {
+    setReasignando(null)
+    setProspectos((lista) =>
+      lista.map((p) => (p.id === actualizado.id ? actualizado : p)),
+    )
+    const nombre =
+      vendedores?.find((v) => v.id === actualizado.vendedorId)?.nombre ??
+      'otro vendedor'
+    toast.success(`${actualizado.nombre} ahora lo atiende ${nombre}.`)
   }
 
   return (
@@ -333,37 +322,33 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true }: Props) {
                 )}
                 {vendedores && (
                   <div className="vendedor">
-                    <label
-                      htmlFor={`vendedor-${prospecto.id}`}
-                      className="solo-lector"
+                    <span className="nombre-vendedor">
+                      {vendedores.find((v) => v.id === prospecto.vendedorId)
+                        ?.nombre ?? 'Vendedor sin acceso'}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      aria-label={`Reasignar a ${prospecto.nombre}`}
+                      onClick={() => setReasignando(prospecto)}
                     >
-                      Vendedor de {prospecto.nombre}
-                    </label>
-                    <select
-                      id={`vendedor-${prospecto.id}`}
-                      value={prospecto.vendedorId}
-                      disabled={guardando.has(prospecto.id)}
-                      onChange={(e) =>
-                        manejarReasignacion(prospecto, Number(e.target.value))
-                      }
-                    >
-                      {!vendedores.some((v) => v.id === prospecto.vendedorId) && (
-                        <option value={prospecto.vendedorId}>
-                          Vendedor sin acceso
-                        </option>
-                      )}
-                      {vendedores.map((vendedor) => (
-                        <option key={vendedor.id} value={vendedor.id}>
-                          {vendedor.nombre}
-                        </option>
-                      ))}
-                    </select>
+                      <UserRoundCog aria-hidden="true" />
+                      Reasignar
+                    </Button>
                   </div>
                 )}
               </li>
             )
           })}
         </ul>
+      )}
+      {vendedores && (
+        <DialogoReasignar
+          prospecto={reasignando}
+          vendedores={vendedores}
+          onCerrar={() => setReasignando(null)}
+          onReasignado={alReasignar}
+        />
       )}
     </section>
   )

@@ -54,16 +54,25 @@ Las historias de usuario, su prioridad y el sprint de cada una se gestionan en e
 
 ## Stack tecnológico
 
-| Tecnología                     | Uso                                      |
-| ------------------------------ | ---------------------------------------- |
-| React + TypeScript             | Librería de UI y tipado estático         |
-| Vite                           | Servidor de desarrollo y build           |
-| ESLint                         | Análisis estático del código             |
-| Vitest + React Testing Library | Pruebas unitarias y de componentes       |
-| React Router 7                 | Navegación entre pantallas               |
-| MSW 2 (Mock Service Worker)    | Simula la API en desarrollo y en pruebas |
+| Tecnología                         | Uso                                      |
+| ---------------------------------- | ---------------------------------------- |
+| React + TypeScript                 | Librería de UI y tipado estático         |
+| Vite                               | Servidor de desarrollo y build           |
+| ESLint                             | Análisis estático del código             |
+| Vitest + React Testing Library     | Pruebas unitarias y de componentes       |
+| React Router 7                     | Navegación entre pantallas               |
+| MSW 2 (Mock Service Worker)        | Simula la API en desarrollo y en pruebas |
+| shadcn/ui (Radix) + Tailwind CSS 4 | Componentes de interfaz y estilos        |
+| Lucide (`lucide-react`)            | Íconos                                   |
+| react-hook-form + zod              | Formularios y validación                 |
+| Inter y JetBrains Mono             | Fuentes locales (`@fontsource-variable`) |
+| Sonner                             | Avisos de resultado                      |
 
-El consumo de la API usa `fetch` con un cliente propio (`src/api/cliente.ts`) que agrega el token de la sesión. Los estilos son CSS propio. La sesión se guarda en `sessionStorage`: sobrevive a recargar la página y se borra al cerrar la pestaña. Formularios y componentes de UI siguen sin librería. Ver [Pendientes por definir](#pendientes-por-definir).
+El consumo de la API usa `fetch` con un cliente propio (`src/api/cliente.ts`) que agrega el token de la sesión. La sesión se guarda en `sessionStorage`: sobrevive a recargar la página y se borra al cerrar la pestaña.
+
+La interfaz sigue la **guía de estilos de Agencia360** (`estilos.pdf`) y los mockups del equipo, igual que el ERP: Azul Agencia `#1D3557` como color principal, turquesa solo como acento, menú lateral izquierdo y componentes de shadcn/ui. Los tokens de color, tipografía y radios están en `src/index.css`. Los componentes se agregan con `npx shadcn@latest add <componente>`; los de `src/components/ui/` son los mismos que usa el ERP.
+
+El login, el menú lateral, la administración de usuarios y el diálogo para reasignar prospectos ya usan shadcn/ui. La lista y el registro de prospectos todavía usan su CSS anterior (`src/estilos-anteriores.css`, aislado dentro de `.estilo-anterior`); al migrarlas se borra ese archivo.
 
 ---
 
@@ -129,10 +138,10 @@ GERENTE_INICIAL_USUARIO=gerente GERENTE_INICIAL_CONTRASENA=Gerente12345 \
 
 > **Solo para desarrollo local.** Estas contraseñas son públicas y **no son las de MSW**.
 
-| Usuario     | Contraseña     | Rol                  | Qué debe ver                                                                 |
-| ----------- | -------------- | -------------------- | ---------------------------------------------------------------------------- |
-| `vendedor1` | `Vendedor123`  | Ventas (Sergio Luna) | Sus 6 prospectos, de Primer contacto a Cerrado                               |
-| `vendedor2` | `Vendedor123`  | Ventas (Elena Ríos)  | Sus 6 prospectos, incluido Ricardo Fuentes, que el Gerente le reasignó        |
+| Usuario     | Contraseña     | Rol                  | Qué debe ver                                                                       |
+| ----------- | -------------- | -------------------- | ---------------------------------------------------------------------------------- |
+| `vendedor1` | `Vendedor123`  | Ventas (Sergio Luna) | Sus 6 prospectos, de Primer contacto a Cerrado                                     |
+| `vendedor2` | `Vendedor123`  | Ventas (Elena Ríos)  | Sus 6 prospectos, incluido Ricardo Fuentes, que el Gerente le reasignó             |
 | `gerente`   | `Gerente12345` | Gerente de marketing | Los 12 prospectos, con al menos uno en cada etapa, y la administración de usuarios |
 
 Para ver el aviso de contacto repetido, entra con `vendedor2` y registra un prospecto con el teléfono `477 555 0101`, que ya tiene Ana López.
@@ -163,7 +172,10 @@ agencia-360-crm-frontend/
 ├── public/              # Archivos estáticos servidos tal cual
 ├── src/
 │   ├── api/             # Cliente HTTP y endpoints de acceso (login, usuarios, roles)
-│   ├── componentes/     # Layout con encabezado, menú y cierre de sesión
+│   ├── componentes/     # Layout con menú lateral y piezas compartidas de las pantallas
+│   ├── components/ui/   # Componentes de shadcn/ui
+│   ├── hooks/           # Hooks compartidos
+│   ├── lib/             # Utilidades (cn, paginación)
 │   ├── mocks/           # Handlers de MSW y datos de ejemplo
 │   ├── navegacion/      # Secciones por rol y rutas protegidas
 │   ├── paginas/         # Login, inicio y usuarios
@@ -173,7 +185,9 @@ agencia-360-crm-frontend/
 │   ├── App.tsx          # Rutas de la aplicación
 │   ├── App.test.tsx     # Pruebas de navegación de la aplicación
 │   ├── main.tsx         # Punto de entrada de la aplicación
-│   └── index.css        # Estilos globales
+│   ├── index.css        # Tema: tokens de la guía de estilos y Tailwind
+│   └── estilos-anteriores.css  # CSS de la lista y el registro de prospectos, hasta migrarlos
+├── components.json      # Configuración de shadcn/ui
 ├── index.html           # HTML base
 ├── eslint.config.js     # Configuración de ESLint
 ├── tsconfig*.json       # Configuración de TypeScript
@@ -281,12 +295,12 @@ El detalle de cada check está en [`docs/convenciones-commits.md`](docs/convenci
 
 ## Pendientes por definir
 
-| Tema                 | Qué falta                                       |
-| -------------------- | ----------------------------------------------- |
-| Etapas del prospecto | Lista definitiva de etapas y motivos de pérdida |
-| Librerías            | Formularios y componentes de UI                 |
-| Pruebas              | Instalación y configuración de Playwright       |
-| Despliegue           | Servicio de Azure y ambientes                   |
+| Tema                 | Qué falta                                               |
+| -------------------- | ------------------------------------------------------- |
+| Etapas del prospecto | Lista definitiva de etapas y motivos de pérdida         |
+| Pantallas anteriores | Migrar la lista y el registro de prospectos a shadcn/ui |
+| Pruebas              | Instalación y configuración de Playwright               |
+| Despliegue           | Servicio de Azure y ambientes                           |
 
 ---
 

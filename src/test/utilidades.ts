@@ -2,6 +2,7 @@ import { render } from '@testing-library/react'
 import { createElement } from 'react'
 import { MemoryRouter } from 'react-router'
 import type { Rol } from '../api/acceso.ts'
+import { Toaster } from '@/components/ui/sonner'
 import App from '../App.tsx'
 import { tokenMock } from '../mocks/acceso.ts'
 import { guardarSesion } from '../sesion/almacen.ts'
@@ -43,9 +44,14 @@ export function conSesion(
   return token
 }
 
-/** Renderiza la aplicación completa en la ruta indicada. */
+/** Renderiza la aplicación completa en la ruta indicada, con sus avisos (Sonner). */
 export function renderApp(ruta = '/') {
   return render(
-    createElement(MemoryRouter, { initialEntries: [ruta] }, createElement(App)),
+    createElement(
+      MemoryRouter,
+      { initialEntries: [ruta] },
+      createElement(App),
+      createElement(Toaster),
+    ),
   )
 }

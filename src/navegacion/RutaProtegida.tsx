@@ -20,9 +20,11 @@ export function RutaProtegida({ children, roles }: Props) {
   }
   if (roles && !roles.includes(sesion.rol)) {
     return (
-      <section className="pagina">
-        <h2>Sin permiso</h2>
-        <p>Tu rol no tiene acceso a esta sección.</p>
+      <section className="py-12 text-center">
+        <h1 className="text-2xl font-semibold text-primary">Sin permiso</h1>
+        <p className="text-muted-foreground">
+          Tu rol no tiene acceso a esta sección.
+        </p>
       </section>
     )
   }

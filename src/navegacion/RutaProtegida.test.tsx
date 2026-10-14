@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { conSesion, renderApp } from '../test/utilidades.ts'
 
 function menu() {
-  return screen.getByRole('navigation', { name: 'Secciones' })
+  return screen.getByRole('navigation', { name: 'Principal' })
 }
 
 describe('Rutas protegidas y menú por rol', () => {
@@ -12,7 +12,7 @@ describe('Rutas protegidas y menú por rol', () => {
     renderApp('/prospectos')
 
     expect(
-      screen.getByRole('button', { name: 'Iniciar sesión' }),
+      screen.getByRole('button', { name: 'Entrar al CRM' }),
     ).toBeInTheDocument()
   })
 
@@ -72,7 +72,7 @@ describe('Rutas protegidas y menú por rol', () => {
       .click(screen.getByRole('button', { name: 'Cerrar sesión' }))
 
     expect(
-      screen.getByRole('button', { name: 'Iniciar sesión' }),
+      screen.getByRole('button', { name: 'Entrar al CRM' }),
     ).toBeInTheDocument()
     expect(sessionStorage.length).toBe(0)
   })

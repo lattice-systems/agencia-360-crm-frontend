@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
@@ -8,11 +8,18 @@ import { conSesion, renderApp } from '../test/utilidades.ts'
 import { URL_PROSPECTOS } from './api.ts'
 
 // CRM-0.1: el gerente reasigna prospectos. Datos de ejemplo en src/mocks/:
-// los 3 prospectos son de Valeria Vendedora (vendedor1, id 1); Víctor
-// Vendedor es vendedor2 (id 2).
+// los prospectos son de Valeria Vendedora (vendedor1, id 1); Víctor Vendedor
+// es vendedor2 (id 2).
 
-async function selectorDe(nombre: string) {
-  return screen.findByRole('combobox', { name: `Vendedor de ${nombre}` })
+async function abrirReasignar(nombre: string) {
+  const usuarioEvento = userEvent.setup()
+  await usuarioEvento.click(
+    await screen.findByRole('button', { name: `Reasignar a ${nombre}` }),
+  )
+  const dialogo = await screen.findByRole('dialog', {
+    name: 'Reasignar prospecto',
+  })
+  return { usuarioEvento, dialogo }
 }
 
 describe('Reasignación de prospectos', () => {
@@ -20,16 +27,14 @@ describe('Reasignación de prospectos', () => {
     conSesion('GERENTE_MARKETING', { uid: 10 })
     renderApp('/prospectos')
 
-    const selector = await selectorDe('Rosa Díaz')
-    expect(selector).toHaveValue('1')
+    const lista = await screen.findByRole('list', { name: 'Prospectos' })
+    const fila = within(lista).getByText('Rosa Díaz').closest('li')!
     expect(
-      within(selector)
-        .getAllByRole('option')
-        .map((o) => o.textContent),
-    ).toEqual(['Valeria Vendedora', 'Víctor Vendedor'])
+      await within(fila).findByText('Valeria Vendedora'),
+    ).toBeInTheDocument()
   })
 
-  it('el gerente reasigna un prospecto a otro vendedor', async () => {
+  it('el gerente reasigna un prospecto a otro vendedor desde el diálogo', async () => {
     conSesion('GERENTE_MARKETING', { uid: 10 })
     let cuerpoEnviado: unknown
     server.use(
@@ -38,14 +43,52 @@ describe('Reasignación de prospectos', () => {
       }),
     )
     renderApp('/prospectos')
+    const { usuarioEvento, dialogo } = await abrirReasignar('Rosa Díaz')
 
-    await userEvent.setup().selectOptions(await selectorDe('Rosa Díaz'), '2')
-
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'Rosa Díaz ahora lo atiende Víctor Vendedor.',
+    expect(
+      within(dialogo).getByText(/Asignado actualmente a Valeria Vendedora/),
+    ).toBeInTheDocument()
+    await usuarioEvento.click(
+      within(dialogo).getByRole('combobox', { name: 'Nuevo vendedor' }),
     )
+    // El vendedor actual no aparece como opción.
+    expect(
+      screen.queryByRole('option', { name: 'Valeria Vendedora' }),
+    ).not.toBeInTheDocument()
+    await usuarioEvento.click(
+      await screen.findByRole('option', { name: 'Víctor Vendedor' }),
+    )
+    await usuarioEvento.click(
+      within(dialogo).getByRole('button', { name: 'Reasignar' }),
+    )
+
+    expect(
+      await screen.findByText(
+        'Rosa Díaz ahora lo atiende Víctor Vendedor.',
+        {},
+        { timeout: 3000 },
+      ),
+    ).toBeInTheDocument()
     expect(cuerpoEnviado).toEqual({ vendedorId: 2 })
-    expect(await selectorDe('Rosa Díaz')).toHaveValue('2')
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
+    const fila = screen.getByText('Rosa Díaz').closest('li')!
+    expect(within(fila).getByText('Víctor Vendedor')).toBeInTheDocument()
+  })
+
+  it('pide elegir un vendedor antes de reasignar', async () => {
+    conSesion('GERENTE_MARKETING', { uid: 10 })
+    renderApp('/prospectos')
+    const { usuarioEvento, dialogo } = await abrirReasignar('Rosa Díaz')
+
+    await usuarioEvento.click(
+      within(dialogo).getByRole('button', { name: 'Reasignar' }),
+    )
+
+    expect(
+      within(dialogo).getByText('Elige el nuevo vendedor.'),
+    ).toBeInTheDocument()
   })
 
   it('muestra el error del backend y deja al vendedor anterior', async () => {
@@ -63,22 +106,35 @@ describe('Reasignación de prospectos', () => {
       ),
     )
     renderApp('/prospectos')
+    const { usuarioEvento, dialogo } = await abrirReasignar('Rosa Díaz')
 
-    await userEvent.setup().selectOptions(await selectorDe('Rosa Díaz'), '2')
-
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'No se pudo reasignar a Rosa Díaz. El usuario 2 no es un vendedor activo',
+    await usuarioEvento.click(
+      within(dialogo).getByRole('combobox', { name: 'Nuevo vendedor' }),
     )
-    expect(await selectorDe('Rosa Díaz')).toHaveValue('1')
+    await usuarioEvento.click(
+      await screen.findByRole('option', { name: 'Víctor Vendedor' }),
+    )
+    await usuarioEvento.click(
+      within(dialogo).getByRole('button', { name: 'Reasignar' }),
+    )
+
+    expect(
+      await within(dialogo).findByText('El usuario 2 no es un vendedor activo'),
+    ).toBeInTheDocument()
+    await usuarioEvento.click(
+      within(dialogo).getByRole('button', { name: 'Cancelar' }),
+    )
+    const fila = screen.getByText('Rosa Díaz').closest('li')!
+    expect(within(fila).getByText('Valeria Vendedora')).toBeInTheDocument()
   })
 
-  it('el vendedor no ve el selector de vendedor', async () => {
+  it('el vendedor no ve la opción de reasignar', async () => {
     conSesion('VENTAS')
     renderApp('/prospectos')
 
     await screen.findByRole('list', { name: 'Prospectos' })
     expect(
-      screen.queryByRole('combobox', { name: 'Vendedor de Rosa Díaz' }),
+      screen.queryByRole('button', { name: 'Reasignar a Rosa Díaz' }),
     ).not.toBeInTheDocument()
   })
 
@@ -96,7 +152,7 @@ describe('Reasignación de prospectos', () => {
     )
     await screen.findByRole('list', { name: 'Prospectos' })
     expect(
-      screen.queryByRole('combobox', { name: 'Vendedor de Rosa Díaz' }),
+      screen.queryByRole('button', { name: 'Reasignar a Rosa Díaz' }),
     ).not.toBeInTheDocument()
   })
 })

@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -10,6 +10,27 @@ import { conSesion, renderApp } from '../test/utilidades.ts'
 // Usuarios de ejemplo en src/mocks/acceso.ts: vendedor1 (Valeria), vendedor2,
 // gerente, conta1 y caja1 (este último solo del ERP).
 
+type Usuario = ReturnType<typeof userEvent.setup>
+
+async function elegir(
+  usuarioEvento: Usuario,
+  combo: HTMLElement,
+  opcion: string,
+) {
+  await usuarioEvento.click(combo)
+  await usuarioEvento.click(await screen.findByRole('option', { name: opcion }))
+}
+
+async function abrirCrearUsuario() {
+  const usuarioEvento = userEvent.setup()
+  await screen.findByText('Valeria Vendedora')
+  await usuarioEvento.click(
+    screen.getByRole('button', { name: 'Crear usuario' }),
+  )
+  const dialogo = await screen.findByRole('dialog', { name: 'Crear usuario' })
+  return { usuarioEvento, dialogo }
+}
+
 describe('Administración de usuarios del CRM', () => {
   beforeEach(() => {
     conSesion('GERENTE_MARKETING', { uid: 10 })
@@ -18,85 +39,152 @@ describe('Administración de usuarios del CRM', () => {
   it('lista solo a los usuarios del CRM', async () => {
     renderApp('/usuarios')
 
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Usuarios y roles',
+      }),
+    ).toBeInTheDocument()
     const fila = (await screen.findByText('Valeria Vendedora')).closest('tr')!
     expect(within(fila).getByText('vendedor1')).toBeInTheDocument()
-    expect(
-      within(fila).getByRole('combobox', { name: 'Rol de vendedor1' }),
-    ).toHaveValue('VENTAS')
+    expect(within(fila).getByText('Ventas')).toBeInTheDocument()
     expect(screen.queryByText('Carla Cajera')).not.toBeInTheDocument()
   })
 
-  it('crea un vendedor que después puede iniciar sesión', async () => {
+  it('crea un vendedor desde el diálogo y lo agrega a la lista', async () => {
     renderApp('/usuarios')
-    await screen.findByText('Valeria Vendedora')
-    const user = userEvent.setup()
+    const { usuarioEvento, dialogo } = await abrirCrearUsuario()
 
-    await user.type(screen.getByLabelText('Usuario'), 'vendedor3')
-    await user.type(screen.getByLabelText('Nombre'), 'Vanessa Vendedora')
-    await user.type(screen.getByLabelText('Contraseña'), CONTRASENA_MOCK)
-    await user.selectOptions(screen.getByLabelText('Rol'), 'VENTAS')
-    await user.click(screen.getByRole('button', { name: 'Crear usuario' }))
+    await usuarioEvento.type(
+      within(dialogo).getByLabelText('Nombre completo'),
+      'Vanessa Vendedora',
+    )
+    await usuarioEvento.type(
+      within(dialogo).getByLabelText('Usuario'),
+      'vendedor3',
+    )
+    await elegir(
+      usuarioEvento,
+      within(dialogo).getByRole('combobox', { name: 'Rol' }),
+      'Ventas',
+    )
+    await usuarioEvento.type(
+      within(dialogo).getByLabelText('Contraseña inicial'),
+      CONTRASENA_MOCK,
+    )
+    await usuarioEvento.click(
+      within(dialogo).getByRole('button', { name: 'Crear usuario' }),
+    )
 
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'Usuario vendedor3 creado.',
+    expect(
+      await screen.findByText(
+        'Usuario vendedor3 creado.',
+        {},
+        { timeout: 3000 },
+      ),
+    ).toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
     )
     expect(screen.getByText('Vanessa Vendedora')).toBeInTheDocument()
   })
 
   it('solo ofrece roles con acceso al CRM', async () => {
     renderApp('/usuarios')
-    await screen.findByText('Valeria Vendedora')
+    const { usuarioEvento, dialogo } = await abrirCrearUsuario()
 
-    const opciones = within(screen.getByLabelText('Rol')).getAllByRole('option')
+    await usuarioEvento.click(
+      within(dialogo).getByRole('combobox', { name: 'Rol' }),
+    )
+
+    const opciones = await screen.findAllByRole('option')
     expect(opciones.map((o) => o.textContent)).toEqual([
-      'Selecciona un rol',
       'Contabilidad',
       'Gerente de marketing',
       'Ventas',
     ])
   })
 
-  it('muestra el error del backend si el usuario ya existe', async () => {
+  it('marca el usuario repetido con el mensaje del backend', async () => {
     renderApp('/usuarios')
-    await screen.findByText('Valeria Vendedora')
-    const user = userEvent.setup()
+    const { usuarioEvento, dialogo } = await abrirCrearUsuario()
 
-    await user.type(screen.getByLabelText('Usuario'), 'vendedor1')
-    await user.type(screen.getByLabelText('Nombre'), 'Otra persona')
-    await user.type(screen.getByLabelText('Contraseña'), CONTRASENA_MOCK)
-    await user.selectOptions(screen.getByLabelText('Rol'), 'VENTAS')
-    await user.click(screen.getByRole('button', { name: 'Crear usuario' }))
+    await usuarioEvento.type(
+      within(dialogo).getByLabelText('Nombre completo'),
+      'Otra persona',
+    )
+    await usuarioEvento.type(
+      within(dialogo).getByLabelText('Usuario'),
+      'vendedor1',
+    )
+    await elegir(
+      usuarioEvento,
+      within(dialogo).getByRole('combobox', { name: 'Rol' }),
+      'Ventas',
+    )
+    await usuarioEvento.type(
+      within(dialogo).getByLabelText('Contraseña inicial'),
+      CONTRASENA_MOCK,
+    )
+    await usuarioEvento.click(
+      within(dialogo).getByRole('button', { name: 'Crear usuario' }),
+    )
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Ya existe un usuario con el nombre de usuario vendedor1',
+    expect(
+      await within(dialogo).findByText(
+        'Ya existe un usuario con el nombre de usuario vendedor1',
+      ),
+    ).toBeInTheDocument()
+    expect(within(dialogo).getByLabelText('Usuario')).toHaveAttribute(
+      'aria-invalid',
+      'true',
     )
   })
 
   it('pide todos los campos antes de crear', async () => {
     renderApp('/usuarios')
-    await screen.findByText('Valeria Vendedora')
+    const { usuarioEvento, dialogo } = await abrirCrearUsuario()
 
-    await userEvent
-      .setup()
-      .click(screen.getByRole('button', { name: 'Crear usuario' }))
-
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Completa usuario, nombre, contraseña y rol.',
+    await usuarioEvento.click(
+      within(dialogo).getByRole('button', { name: 'Crear usuario' }),
     )
+
+    expect(
+      await within(dialogo).findByText('Escribe el nombre completo.'),
+    ).toBeInTheDocument()
+    expect(within(dialogo).getByText('Elige un rol.')).toBeInTheDocument()
   })
 
-  it('cambia el rol de un usuario', async () => {
+  it('cambia el rol desde el menú de la fila', async () => {
     renderApp('/usuarios')
-    const selector = await screen.findByRole('combobox', {
-      name: 'Rol de conta1',
-    })
+    await screen.findByText('Carlos Contador')
+    const usuarioEvento = userEvent.setup()
 
-    await userEvent.setup().selectOptions(selector, 'VENTAS')
-
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'El rol de conta1 ahora es Ventas.',
+    await usuarioEvento.click(
+      screen.getByRole('button', { name: 'Acciones de conta1' }),
     )
-    expect(selector).toHaveValue('VENTAS')
+    await usuarioEvento.click(
+      await screen.findByRole('menuitem', { name: 'Cambiar rol' }),
+    )
+    const dialogo = await screen.findByRole('dialog', { name: 'Cambiar rol' })
+    await elegir(
+      usuarioEvento,
+      within(dialogo).getByRole('combobox', { name: 'Nuevo rol' }),
+      'Ventas',
+    )
+    await usuarioEvento.click(
+      within(dialogo).getByRole('button', { name: 'Guardar rol' }),
+    )
+
+    expect(
+      await screen.findByText(
+        'El rol de conta1 ahora es Ventas.',
+        {},
+        { timeout: 3000 },
+      ),
+    ).toBeInTheDocument()
+    const fila = screen.getByText('Carlos Contador').closest('tr')!
+    expect(within(fila).getByText('Ventas')).toBeInTheDocument()
   })
 
   it('no permite que el gerente cambie su propio rol', async () => {
@@ -121,13 +209,17 @@ describe('Administración de usuarios del CRM', () => {
       ),
     )
     renderApp('/usuarios')
+    await screen.findByText('usuario.prueba')
+
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: 'Acciones de usuario.prueba' }))
 
     expect(
-      await screen.findByRole('combobox', { name: 'Rol de usuario.prueba' }),
-    ).toBeDisabled()
-    expect(
-      screen.getByRole('combobox', { name: 'Rol de vendedor1' }),
-    ).toBeEnabled()
+      await screen.findByRole('menuitem', {
+        name: 'No puedes cambiar tu propio rol',
+      }),
+    ).toHaveAttribute('aria-disabled', 'true')
   })
 
   it('cierra la sesión si el backend responde que el token ya no es válido', async () => {
