@@ -16,6 +16,7 @@ import {
   todosLosProspectos,
 } from './datos.ts'
 import { actorDe, buscarUsuario, handlersAcceso, type ActorMock } from './acceso.ts'
+import { handlersClientes } from './clientes.ts'
 import { handlersReasignacion } from './reasignacion.ts'
 
 // Simula los endpoints de prospectos de ventascrm con las mismas reglas que el
@@ -67,6 +68,7 @@ function bloqueoDelVendedor(actual: Etapa, nueva: Etapa): string | null {
 export const handlers = [
   ...handlersAcceso,
   ...handlersReasignacion,
+  ...handlersClientes,
 
   http.get(URL_PROSPECTOS, ({ request }) => {
     const etapa = new URL(request.url).searchParams.get('etapa')

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { Layout } from './componentes/Layout.tsx'
 import { RutaProtegida } from './navegacion/RutaProtegida.tsx'
 import { rolesDe } from './navegacion/secciones.ts'
+import { ClientesPage } from './paginas/ClientesPage.tsx'
 import { InicioPage } from './paginas/InicioPage.tsx'
 import { LoginPage } from './paginas/LoginPage.tsx'
 import { ProspectosPage } from './paginas/ProspectosPage.tsx'
@@ -35,6 +36,14 @@ function App() {
             element={
               <RutaProtegida roles={rolesDe('/registrar')}>
                 <RegistroProspectoForm />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="clientes"
+            element={
+              <RutaProtegida roles={rolesDe('/clientes')}>
+                <ClientesPage />
               </RutaProtegida>
             }
           />
