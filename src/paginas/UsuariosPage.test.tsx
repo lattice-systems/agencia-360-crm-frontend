@@ -8,7 +8,7 @@ import { server } from '../mocks/server.ts'
 import { conSesion, renderApp } from '../test/utilidades.ts'
 
 // Usuarios de ejemplo en src/mocks/acceso.ts: vendedor1 (Valeria), vendedor2,
-// gerente, conta1 y caja1 (este último solo del ERP).
+// gerente, conta1 y caja1 (estos dos últimos solo del ERP).
 
 type Usuario = ReturnType<typeof userEvent.setup>
 
@@ -99,7 +99,6 @@ describe('Administración de usuarios del CRM', () => {
 
     const opciones = await screen.findAllByRole('option')
     expect(opciones.map((o) => o.textContent)).toEqual([
-      'Contabilidad',
       'Gerente de marketing',
       'Ventas',
     ])
@@ -157,11 +156,11 @@ describe('Administración de usuarios del CRM', () => {
 
   it('cambia el rol desde el menú de la fila', async () => {
     renderApp('/usuarios')
-    await screen.findByText('Carlos Contador')
+    await screen.findByText('Víctor Vendedor')
     const usuarioEvento = userEvent.setup()
 
     await usuarioEvento.click(
-      screen.getByRole('button', { name: 'Acciones de conta1' }),
+      screen.getByRole('button', { name: 'Acciones de vendedor2' }),
     )
     await usuarioEvento.click(
       await screen.findByRole('menuitem', { name: 'Cambiar rol' }),
@@ -170,7 +169,7 @@ describe('Administración de usuarios del CRM', () => {
     await elegir(
       usuarioEvento,
       within(dialogo).getByRole('combobox', { name: 'Nuevo rol' }),
-      'Ventas',
+      'Gerente de marketing',
     )
     await usuarioEvento.click(
       within(dialogo).getByRole('button', { name: 'Guardar rol' }),
@@ -178,13 +177,13 @@ describe('Administración de usuarios del CRM', () => {
 
     expect(
       await screen.findByText(
-        'El rol de conta1 ahora es Ventas.',
+        'El rol de vendedor2 ahora es Gerente de marketing.',
         {},
         { timeout: 3000 },
       ),
     ).toBeInTheDocument()
-    const fila = screen.getByText('Carlos Contador').closest('tr')!
-    expect(within(fila).getByText('Ventas')).toBeInTheDocument()
+    const fila = screen.getByText('Víctor Vendedor').closest('tr')!
+    expect(within(fila).getByText('Gerente de marketing')).toBeInTheDocument()
   })
 
   it('no permite que el gerente cambie su propio rol', async () => {

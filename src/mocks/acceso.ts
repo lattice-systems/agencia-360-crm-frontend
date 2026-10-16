@@ -17,12 +17,6 @@ export const CONTRASENA_MOCK = 'Secreta123'
 
 const ROLES_CRM: RolApi[] = [
   {
-    nombre: 'CONTABILIDAD',
-    descripcion: 'Autoriza pagos y revisa la contabilidad',
-    accesoErp: true,
-    accesoCrm: true,
-  },
-  {
     nombre: 'GERENTE_MARKETING',
     descripcion: 'Administra el CRM',
     accesoErp: false,
