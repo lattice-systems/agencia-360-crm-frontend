@@ -1,7 +1,7 @@
 // Secciones del CRM y los roles que pueden entrar a cada una, según la matriz
 // de roles. Cada pantalla nueva del CRM agrega aquí su sección; con eso aparece
 // en el menú lateral y su ruta queda protegida.
-import { UserCog, UserPlus, Users, type LucideIcon } from 'lucide-react'
+import { Contact, UserCog, UserPlus, Users, type LucideIcon } from 'lucide-react'
 import type { Rol } from '../api/acceso.ts'
 
 /** Grupos del menú lateral, en el orden en que se muestran. */
@@ -32,6 +32,13 @@ export const SECCIONES: Seccion[] = [
     grupo: 'Ventas',
     icono: UserPlus,
     roles: ['VENTAS'],
+  },
+  {
+    ruta: '/clientes',
+    titulo: 'Clientes',
+    grupo: 'Ventas',
+    icono: Contact,
+    roles: ['GERENTE_MARKETING'],
   },
   {
     ruta: '/usuarios',

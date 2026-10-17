@@ -3,6 +3,7 @@ import { cleanup } from '@testing-library/react'
 import { toast } from 'sonner'
 import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
 import { reiniciarUsuarios } from '../mocks/acceso.ts'
+import { reiniciarClientes } from '../mocks/clientes.ts'
 import { reiniciarDatos } from '../mocks/datos.ts'
 import { server } from '../mocks/server.ts'
 
@@ -38,6 +39,7 @@ beforeAll(() => {
 beforeEach(() => {
   reiniciarDatos()
   reiniciarUsuarios()
+  reiniciarClientes()
   sessionStorage.clear()
 })
 
