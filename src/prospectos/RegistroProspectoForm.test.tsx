@@ -25,7 +25,7 @@ describe('Registro de prospecto', () => {
     abrir()
 
     expect(screen.getByRole('heading', { level: 1, name: 'Registrar prospecto' })).toBeInTheDocument()
-    const ruta = screen.getByRole('navigation', { name: 'Ruta' })
+    const ruta = screen.getByRole('navigation', { name: 'Migas de pan' })
     expect(within(ruta).getByRole('link', { name: 'Prospectos' })).toHaveAttribute('href', '/prospectos')
     expect(screen.getByText('Información de contacto')).toBeInTheDocument()
     expect(screen.getByText('Etapa inicial')).toHaveTextContent('Primer contacto')

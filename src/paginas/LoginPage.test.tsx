@@ -32,7 +32,9 @@ describe('Inicio de sesión', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Mis prospectos' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('Valeria Vendedora')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Perfil de Valeria Vendedora' }),
+    ).toBeInTheDocument()
     expect(cuerpoEnviado).toEqual({
       usuario: 'vendedor1',
       contrasena: CONTRASENA_MOCK,

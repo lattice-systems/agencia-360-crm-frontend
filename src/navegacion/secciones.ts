@@ -16,6 +16,14 @@ export interface Seccion {
   /** Ícono de Lucide (guía de estilos, sección 7). */
   icono: LucideIcon
   roles: Rol[]
+  /**
+   * Para las migas de pan: sección de la que depende aunque tenga su propia
+   * entrada en el menú, y cómo se llama ahí (Prospectos / Registrar prospecto).
+   */
+  padre?: string
+  tituloEnMigas?: string
+  /** Páginas dentro de la sección, para las migas de pan (ruta con :parámetros). */
+  subpaginas?: { ruta: string; titulo: string }[]
 }
 
 export const SECCIONES: Seccion[] = [
@@ -32,6 +40,8 @@ export const SECCIONES: Seccion[] = [
     grupo: 'Ventas',
     icono: UserPlus,
     roles: ['VENTAS'],
+    padre: '/prospectos',
+    tituloEnMigas: 'Registrar prospecto',
   },
   {
     ruta: '/clientes',

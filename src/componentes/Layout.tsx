@@ -1,10 +1,7 @@
-import { LogOut } from 'lucide-react'
 import { Link, Outlet, useLocation } from 'react-router'
-import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -14,22 +11,22 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarSeparator,
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { GRUPOS, seccionDe, seccionesPara } from '../navegacion/secciones.ts'
-import { NOMBRE_ROL } from '../sesion/roles.ts'
+import { MenuPerfil } from '../navegacion/MenuPerfil.tsx'
+import { MigasDePan } from '../navegacion/MigasDePan.tsx'
+import { GRUPOS, seccionesPara } from '../navegacion/secciones.ts'
 import { useSesion } from '../sesion/useSesion.ts'
 
 /**
- * Estructura de la aplicación, igual que en el ERP: menú lateral izquierdo con
- * las secciones del rol y barra superior con el control para plegarlo. En
- * pantallas de menos de 1024 px el menú se abre como Sheet desde la izquierda.
+ * Estructura de la aplicación, igual que en el ERP (CRM-UX-2): menú lateral
+ * izquierdo con las secciones del rol y barra superior con el control para
+ * plegarlo, las migas de pan y el menú de perfil. En pantallas de menos de
+ * 1024 px el menú se abre como Sheet desde la izquierda.
  */
 export function Layout() {
   const { sesion } = useSesion()
-  const { pathname } = useLocation()
   if (!sesion) {
     return null
   }
@@ -39,11 +36,11 @@ export function Layout() {
       <MenuLateral />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-3 border-b bg-card px-4 md:px-6">
-          <SidebarTrigger className="size-10 border" aria-label="Mostrar u ocultar el menú" />
-          <span className="font-semibold text-primary">Agencia360 · CRM</span>
-          <span className="ml-auto text-sm text-muted-foreground">
-            {seccionDe(pathname)?.titulo ?? 'Inicio'}
-          </span>
+          <SidebarTrigger className="size-10 shrink-0 border" aria-label="Mostrar u ocultar el menú" />
+          <MigasDePan />
+          <div className="ml-auto shrink-0">
+            <MenuPerfil />
+          </div>
         </header>
         <div className="mx-auto w-full max-w-[960px] flex-1 p-4 md:p-6">
           <Outlet />
@@ -54,7 +51,7 @@ export function Layout() {
 }
 
 function MenuLateral() {
-  const { sesion, cerrar } = useSesion()
+  const { sesion } = useSesion()
   const { pathname } = useLocation()
   const { setOpenMobile } = useSidebar()
   if (!sesion) {
@@ -64,15 +61,16 @@ function MenuLateral() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="gap-3 px-4 pt-5">
-        <Link to="/" onClick={() => setOpenMobile(false)} className="rounded-md">
-          <img
-            src="/agencia360-logo-blanco.svg"
-            alt="Agencia360"
-            className="h-auto w-[180px]"
-          />
+      <SidebarHeader className="px-4 pt-5 pb-4">
+        {/* 128 px: arriba del mínimo de 120 px de la guía (sección 1). */}
+        <Link
+          to="/"
+          onClick={() => setOpenMobile(false)}
+          aria-label="Agencia360, ir a Inicio"
+          className="w-fit rounded-md"
+        >
+          <img src="/agencia360-logo-blanco.svg" alt="" className="h-auto w-32" />
         </Link>
-        <span className="text-sm text-sidebar-foreground/75">Agencia360 · CRM</span>
       </SidebarHeader>
       <div aria-hidden="true" className="mx-4 h-px bg-sidebar-border" />
       <SidebarContent>
@@ -119,21 +117,6 @@ function MenuLateral() {
           })}
         </nav>
       </SidebarContent>
-      <SidebarFooter className="gap-3 px-4 pb-5">
-        <SidebarSeparator className="mx-0" />
-        <div className="flex flex-col">
-          <span className="font-semibold">{sesion.nombre}</span>
-          <span className="text-xs text-sidebar-foreground/75">{NOMBRE_ROL[sesion.rol]}</span>
-        </div>
-        <Button
-          variant="outline"
-          className="justify-start border-sidebar-foreground/40 bg-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          onClick={() => cerrar()}
-        >
-          <LogOut aria-hidden="true" />
-          Cerrar sesión
-        </Button>
-      </SidebarFooter>
     </Sidebar>
   )
 }
