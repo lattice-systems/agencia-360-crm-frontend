@@ -40,3 +40,59 @@ export function listarClientes(): Promise<ClienteResumen[]> {
 export function obtenerCliente(id: number): Promise<ClienteDetalle> {
   return peticion(`${URL_CLIENTES}/${id}`)
 }
+
+export interface ClienteNuevo {
+  nombre: string
+  correo?: string
+  telefono?: string
+}
+
+export interface VehiculoNuevo {
+  vin: string
+  modelo: string
+  anio: number
+}
+
+export type EstadoCuenta = 'SIN_CUENTA' | 'ACTIVA' | 'DESACTIVADA'
+
+/** Cuenta de la app del cliente (CRM-1.3). */
+export interface CuentaApp {
+  clienteId: number
+  estado: EstadoCuenta
+  /** true si el cliente aún no entra por primera vez. */
+  debeCambiarContrasena: boolean
+}
+
+/** CRM-1.3: alta manual para casos especiales. */
+export function registrarCliente(datos: ClienteNuevo): Promise<ClienteDetalle> {
+  return peticion(URL_CLIENTES, { metodo: 'POST', cuerpo: datos })
+}
+
+export function asignarVehiculo(
+  clienteId: number,
+  vehiculo: VehiculoNuevo,
+): Promise<ClienteDetalle> {
+  return peticion(`${URL_CLIENTES}/${clienteId}/vehiculos`, {
+    metodo: 'POST',
+    cuerpo: vehiculo,
+  })
+}
+
+const urlCuenta = (clienteId: number) => `${URL_CLIENTES}/${clienteId}/cuenta-app`
+
+export function obtenerCuentaApp(clienteId: number): Promise<CuentaApp> {
+  return peticion(urlCuenta(clienteId))
+}
+
+/** Abre la cuenta; el backend manda la contraseña temporal al correo del cliente. */
+export function abrirCuentaApp(clienteId: number): Promise<CuentaApp> {
+  return peticion(urlCuenta(clienteId), { metodo: 'POST' })
+}
+
+export function desactivarCuentaApp(clienteId: number): Promise<CuentaApp> {
+  return peticion(`${urlCuenta(clienteId)}/desactivar`, { metodo: 'POST' })
+}
+
+export function activarCuentaApp(clienteId: number): Promise<CuentaApp> {
+  return peticion(`${urlCuenta(clienteId)}/activar`, { metodo: 'POST' })
+}

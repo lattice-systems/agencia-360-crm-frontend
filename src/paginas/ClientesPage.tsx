@@ -1,15 +1,9 @@
-import { Car, Contact, Search } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { Car, Contact, Plus, Search } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -25,9 +19,11 @@ import { deLaPagina } from '@/lib/paginacion'
 import { useConsulta } from '../api/useConsulta.ts'
 import {
   listarClientes,
-  obtenerCliente,
+  type ClienteDetalle,
   type ClienteResumen,
 } from '../clientes/api.ts'
+import { DialogoAgregarCliente } from '../clientes/DialogoAgregarCliente.tsx'
+import { DialogoCliente } from '../clientes/DialogoCliente.tsx'
 import { EncabezadoPagina } from '../componentes/EncabezadoPagina.tsx'
 import { EstadoVacio } from '../componentes/EstadoVacio.tsx'
 import { Paginacion } from '../componentes/Paginacion.tsx'
@@ -52,15 +48,28 @@ function textoVehiculos(cantidad: number): string {
   return cantidad === 1 ? '1 vehículo' : `${cantidad} vehículos`
 }
 
+/** Del detalle del backend al renglón de la lista. */
+function resumenDe(cliente: ClienteDetalle): ClienteResumen {
+  return {
+    id: cliente.id,
+    nombre: cliente.nombre,
+    correo: cliente.correo,
+    telefono: cliente.telefono,
+    vehiculos: cliente.vehiculos.length,
+    creadoEn: cliente.creadoEn,
+  }
+}
+
 /**
- * Clientes de la agencia (CRM-1.5), separados de los usuarios internos. Solo
- * los consulta el Gerente de marketing.
+ * Clientes de la agencia (CRM-1.5), separados de los usuarios internos, con su
+ * cuenta de la app y sus vehículos (CRM-1.3). Solo el Gerente de marketing.
  */
 export function ClientesPage() {
-  const { datos, cargando, error, recargar } = useConsulta(listarClientes)
+  const { datos, cargando, error, recargar, actualizar } = useConsulta(listarClientes)
   const [busqueda, setBusqueda] = useState('')
   const [pagina, setPagina] = useState(1)
   const [viendo, setViendo] = useState<ClienteResumen | null>(null)
+  const [agregando, setAgregando] = useState(false)
 
   const clientes = useMemo(() => datos ?? [], [datos])
   const filtrados = useMemo(() => {
@@ -73,11 +82,28 @@ export function ClientesPage() {
     )
   }, [clientes, busqueda])
 
+  function reemplazar(cliente: ClienteDetalle) {
+    const renglon = resumenDe(cliente)
+    actualizar((actuales) => {
+      const lista = actuales ?? []
+      const existe = lista.some((c) => c.id === renglon.id)
+      return (existe ? lista.map((c) => (c.id === renglon.id ? renglon : c)) : [...lista, renglon]).sort(
+        (a, b) => a.nombre.localeCompare(b.nombre),
+      )
+    })
+  }
+
   return (
     <section className="flex flex-col gap-6">
       <EncabezadoPagina
         titulo="Clientes"
         descripcion="Clientes de la agencia y sus vehículos. Se registran cuando su prospecto llega a Finalizado."
+        accion={
+          <Button onClick={() => setAgregando(true)} disabled={!datos}>
+            <Plus aria-hidden="true" />
+            Agregar cliente
+          </Button>
+        }
       />
 
       {error ? (
@@ -149,7 +175,21 @@ export function ClientesPage() {
         </>
       )}
 
-      <DialogoVehiculos cliente={viendo} onCerrar={() => setViendo(null)} />
+      <DialogoCliente
+        cliente={viendo}
+        onCerrar={() => setViendo(null)}
+        onActualizado={reemplazar}
+      />
+      <DialogoAgregarCliente
+        abierto={agregando}
+        onCerrar={() => setAgregando(false)}
+        onCreado={(cliente) => {
+          reemplazar(cliente)
+          setAgregando(false)
+          toast.success(`Cliente ${cliente.nombre} agregado.`)
+          setViendo(resumenDe(cliente))
+        }}
+      />
     </section>
   )
 }
@@ -221,68 +261,6 @@ function ListaClientes({ clientes, onVer }: PropsLista) {
               {botonVer(c)}
             </div>
           </Card>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-function DialogoVehiculos({
-  cliente,
-  onCerrar,
-}: {
-  cliente: ClienteResumen | null
-  onCerrar: () => void
-}) {
-  return (
-    <Dialog open={cliente !== null} onOpenChange={(abrir) => !abrir && onCerrar()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Vehículos de {cliente?.nombre}</DialogTitle>
-          <DialogDescription>
-            {cliente?.correo ?? SIN_CORREO}
-          </DialogDescription>
-        </DialogHeader>
-        {cliente && <DetalleVehiculos clienteId={cliente.id} />}
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function DetalleVehiculos({ clienteId }: { clienteId: number }) {
-  const consulta = useCallback(() => obtenerCliente(clienteId), [clienteId])
-  const { datos, cargando, error } = useConsulta(consulta)
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    )
-  }
-  if (cargando || !datos) {
-    return <p className="text-sm text-muted-foreground">Cargando vehículos…</p>
-  }
-  if (datos.vehiculos.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Este cliente todavía no tiene vehículos.
-      </p>
-    )
-  }
-  return (
-    <ul className="flex flex-col gap-3">
-      {datos.vehiculos.map((v) => (
-        <li key={v.id} className="rounded-md border p-3">
-          <p className="font-medium">
-            {v.modelo} {v.anio}
-          </p>
-          <p className="font-mono text-xs text-muted-foreground">VIN {v.vin}</p>
-          <p className="text-sm text-muted-foreground">
-            {v.placas ? `Placas ${v.placas}` : 'Sin placas registradas'}
-            {v.kilometraje !== null &&
-              ` · ${v.kilometraje.toLocaleString('es-MX')} km`}
-          </p>
         </li>
       ))}
     </ul>

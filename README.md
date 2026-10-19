@@ -117,7 +117,7 @@ Con `npm run dev`, MSW simula el backend (login, usuarios, roles y prospectos) c
 | ----------- | -------------------- | --------------------------------------------------------------------- |
 | `vendedor1` | Ventas               | Sus prospectos y el registro                                          |
 | `vendedor2` | Ventas               | Ningún prospecto (sirve para probar la visibilidad)                   |
-| `gerente`   | Gerente de marketing | Todos los prospectos (y los reasigna), los clientes y la administración de usuarios |
+| `gerente`   | Gerente de marketing | Todos los prospectos (y los reasigna), los clientes (alta, vehículos y cuenta de la app) y la administración de usuarios |
 | `conta1`    | Contabilidad         | No entra: su rol no tiene acceso al CRM                               |
 | `caja1`     | Caja                 | No entra: su rol no tiene acceso al CRM                               |
 
