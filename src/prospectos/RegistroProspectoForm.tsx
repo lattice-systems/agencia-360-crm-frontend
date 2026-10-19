@@ -140,7 +140,6 @@ function RegistroProspectoForm() {
     <section className="flex flex-col gap-6">
       <EncabezadoPagina
         titulo="Registrar prospecto"
-        migas={[{ texto: 'Prospectos', ruta: '/prospectos' }, { texto: 'Registrar prospecto' }]}
       />
 
       <Card>
