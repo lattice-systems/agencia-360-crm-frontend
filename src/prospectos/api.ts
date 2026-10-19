@@ -1,6 +1,7 @@
 import { peticion } from '../api/cliente.ts'
 import type {
   Etapa,
+  MotivoCierre,
   Movimiento,
   Prospecto,
   ProspectoNuevo,
@@ -48,23 +49,35 @@ export function historialDe(id: number): Promise<Movimiento[]> {
 
 /**
  * CRM-1.1: el servidor registra el cambio con fecha y hora en el historial.
- * Para pasar a Cerrado el motivo es obligatorio (decisión del PO).
+ * Para pasar a Cerrado el motivo es obligatorio y es uno de los fijos (CRM-1.2).
  */
 export function cambiarEtapa(
   id: number,
   etapa: Etapa,
-  motivoCierre?: string,
+  motivoCierre?: MotivoCierre,
+  {
+    clienteRechazaApp = false,
+    correoCliente,
+  }: { clienteRechazaApp?: boolean; correoCliente?: string } = {},
 ): Promise<Prospecto> {
+  // Al finalizar: si el cliente no quiere la app, no se le crea la cuenta; si
+  // sí la quiere y el prospecto no tiene correo, se manda el que capturó el
+  // vendedor.
   return peticion(`${URL_PROSPECTOS}/${id}/etapa`, {
     metodo: 'PATCH',
-    cuerpo: motivoCierre === undefined ? { etapa } : { etapa, motivoCierre },
+    cuerpo: {
+      etapa,
+      ...(motivoCierre === undefined ? {} : { motivoCierre }),
+      ...(clienteRechazaApp ? { clienteRechazaApp } : {}),
+      ...(correoCliente ? { correoCliente } : {}),
+    },
   })
 }
 
 /** Desde Pago en adelante el cierre lo aprueba el Administrador. */
 export function solicitarCierre(
   id: number,
-  motivo: string,
+  motivo: MotivoCierre,
 ): Promise<SolicitudCierre> {
   return peticion(`${URL_PROSPECTOS}/${id}/solicitudes-cierre`, {
     metodo: 'POST',

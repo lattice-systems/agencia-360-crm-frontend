@@ -18,37 +18,46 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { Textarea } from '@/components/ui/textarea'
 import { useMensajeDeError } from '../api/useConsulta.ts'
 import { cambiarEtapa } from './api.ts'
 import { EtapaChip } from './EtapaChip.tsx'
 import { HistorialEtapas } from './HistorialEtapas.tsx'
+import { SelectorMotivoCierre } from './SelectorMotivoCierre.tsx'
 import {
   etapasDestinoDelVendedor,
   NOMBRES_ETAPA,
   type Etapa,
+  type MotivoCierre,
   type Prospecto,
 } from './tipos.ts'
 
 interface Props {
   /** Prospecto en Primer contacto, Visita o Cotización; con null está cerrado. */
   prospecto: Prospecto | null
+  /** Etapa ya elegida al abrir (la siguiente, o Cerrado); se puede cambiar. */
+  etapaSugerida?: Etapa
   onCerrar: () => void
   onCambiado: (prospecto: Prospecto) => void
 }
 
 const SIN_ETAPA = 'Elige la nueva etapa.'
-const SIN_MOTIVO = 'Escribe el motivo de cierre.'
+const SIN_MOTIVO = 'Elige el motivo de cierre.'
 
 /**
  * Cambio de etapa con confirmación explícita (CRM-1.1, mockup p. 16). Desde las
  * tres primeras etapas el vendedor puede ir a cualquiera de ellas, a Pago o a
- * Cerrado; al cerrar el motivo es obligatorio (decisión del PO).
+ * Cerrado; al cerrar el motivo es obligatorio y es uno de los tres fijos
+ * (CRM-1.2).
  */
-export function DialogoCambiarEtapa({ prospecto, onCerrar, onCambiado }: Props) {
+export function DialogoCambiarEtapa({
+  prospecto,
+  etapaSugerida,
+  onCerrar,
+  onCambiado,
+}: Props) {
   const mensajeDeError = useMensajeDeError()
   const [etapa, setEtapa] = useState<Etapa | ''>('')
-  const [motivo, setMotivo] = useState('')
+  const [motivo, setMotivo] = useState<MotivoCierre | null>(null)
   const [errores, setErrores] = useState<{ etapa?: string; motivo?: string }>({})
   const [errorApi, setErrorApi] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -57,8 +66,8 @@ export function DialogoCambiarEtapa({ prospecto, onCerrar, onCambiado }: Props) 
   // Al abrir para otro prospecto se limpia lo capturado antes.
   if (prospecto && abiertoPara !== prospecto.id) {
     setAbiertoPara(prospecto.id)
-    setEtapa('')
-    setMotivo('')
+    setEtapa(etapaSugerida ?? '')
+    setMotivo(null)
     setErrores({})
     setErrorApi(null)
   }
@@ -72,7 +81,7 @@ export function DialogoCambiarEtapa({ prospecto, onCerrar, onCambiado }: Props) 
     if (!prospecto) return
     const nuevosErrores = {
       etapa: etapa ? undefined : SIN_ETAPA,
-      motivo: etapa === 'CERRADO' && !motivo.trim() ? SIN_MOTIVO : undefined,
+      motivo: etapa === 'CERRADO' && !motivo ? SIN_MOTIVO : undefined,
     }
     setErrores(nuevosErrores)
     if (nuevosErrores.etapa || nuevosErrores.motivo || !etapa) return
@@ -83,7 +92,7 @@ export function DialogoCambiarEtapa({ prospecto, onCerrar, onCambiado }: Props) 
       const actualizado = await cambiarEtapa(
         prospecto.id,
         etapa,
-        etapa === 'CERRADO' ? motivo.trim() : undefined,
+        etapa === 'CERRADO' && motivo ? motivo : undefined,
       )
       setAbiertoPara(null)
       onCambiado(actualizado)
@@ -147,29 +156,20 @@ export function DialogoCambiarEtapa({ prospecto, onCerrar, onCambiado }: Props) 
             </Field>
 
             {etapa === 'CERRADO' && (
-              <Field data-invalid={!!errores.motivo}>
-                <FieldLabel htmlFor="motivo-cierre">Motivo de cierre</FieldLabel>
-                <Textarea
+              <div className="flex flex-col gap-2">
+                <SelectorMotivoCierre
                   id="motivo-cierre"
-                  value={motivo}
-                  maxLength={200}
-                  rows={3}
-                  onChange={(e) => setMotivo(e.target.value)}
-                  aria-invalid={!!errores.motivo || undefined}
-                  aria-describedby={
-                    errores.motivo
-                      ? 'motivo-cierre-ayuda motivo-cierre-error'
-                      : 'motivo-cierre-ayuda'
-                  }
+                  valor={motivo}
+                  onCambiar={(elegido) => {
+                    setMotivo(elegido)
+                    setErrores({})
+                  }}
+                  error={errores.motivo}
                 />
-                <FieldDescription id="motivo-cierre-ayuda">
+                <FieldDescription>
                   Un prospecto cerrado ya no cambia de etapa.
                 </FieldDescription>
-                <FieldError
-                  id="motivo-cierre-error"
-                  errors={errores.motivo ? [{ message: errores.motivo }] : []}
-                />
-              </Field>
+              </div>
             )}
 
             {errorApi && (

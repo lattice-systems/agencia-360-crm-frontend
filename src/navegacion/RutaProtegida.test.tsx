@@ -16,12 +16,14 @@ describe('Rutas protegidas y menú por rol', () => {
     ).toBeInTheDocument()
   })
 
-  it('al vendedor le muestra Prospectos y Registrar, pero no Usuarios', () => {
+  it('al vendedor le muestra Prospectos y Finalizados, pero no Usuarios', () => {
     conSesion('VENTAS')
     renderApp('/')
 
     expect(menu()).toHaveTextContent('Prospectos')
-    expect(menu()).toHaveTextContent('Registrar')
+    expect(menu()).toHaveTextContent('Finalizados')
+    // Registrar se abre con el botón de Prospectos, no desde el menú.
+    expect(menu()).not.toHaveTextContent('Registrar')
     expect(menu()).not.toHaveTextContent('Usuarios')
   })
 
@@ -56,7 +58,7 @@ describe('Rutas protegidas y menú por rol', () => {
 
   it('bloquea Registrar al gerente de marketing', () => {
     conSesion('GERENTE_MARKETING', { uid: 10 })
-    renderApp('/registrar')
+    renderApp('/prospectos/registrar')
 
     expect(
       screen.getByRole('heading', { name: 'Sin permiso' }),

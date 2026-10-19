@@ -11,19 +11,11 @@ import { URL_PROSPECTOS } from './api.ts'
 // los prospectos son de Valeria Vendedora (vendedor1, id 1); Víctor Vendedor
 // es vendedor2 (id 2).
 
-// La reasignación se abre desde el menú de cada renglón (mockup p. 17).
-async function abrirMenu(nombre: string) {
+// La reasignación se abre con el botón de la columna Acciones.
+async function abrirReasignar(nombre: string) {
   const usuarioEvento = userEvent.setup()
   await usuarioEvento.click(
-    await screen.findByRole('button', { name: `Acciones de ${nombre}` }),
-  )
-  return { usuarioEvento, menu: await screen.findByRole('menu') }
-}
-
-async function abrirReasignar(nombre: string) {
-  const { usuarioEvento, menu } = await abrirMenu(nombre)
-  await usuarioEvento.click(
-    await within(menu).findByRole('menuitem', { name: 'Reasignar' }),
+    await screen.findByRole('button', { name: `Reasignar a ${nombre}` }),
   )
   const dialogo = await screen.findByRole('dialog', {
     name: 'Reasignar prospecto',
@@ -142,9 +134,8 @@ describe('Reasignación de prospectos', () => {
     renderApp('/prospectos')
 
     await screen.findByRole('table', { name: 'Prospectos' })
-    const { menu } = await abrirMenu('Rosa Díaz')
     expect(
-      within(menu).queryByRole('menuitem', { name: 'Reasignar' }),
+      screen.queryByRole('button', { name: 'Reasignar a Rosa Díaz' }),
     ).not.toBeInTheDocument()
   })
 
@@ -161,9 +152,8 @@ describe('Reasignación de prospectos', () => {
       'No se pudo cargar la lista de vendedores',
     )
     await screen.findByRole('table', { name: 'Prospectos' })
-    const { menu } = await abrirMenu('Rosa Díaz')
     expect(
-      within(menu).queryByRole('menuitem', { name: 'Reasignar' }),
+      screen.queryByRole('button', { name: 'Reasignar a Rosa Díaz' }),
     ).not.toBeInTheDocument()
   })
 })

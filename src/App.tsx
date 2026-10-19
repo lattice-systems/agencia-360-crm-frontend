@@ -1,8 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { Layout } from './componentes/Layout.tsx'
 import { RutaProtegida } from './navegacion/RutaProtegida.tsx'
-import { rolesDe } from './navegacion/secciones.ts'
+import { ROLES_REGISTRAR, rolesDe } from './navegacion/secciones.ts'
 import { ClientesPage } from './paginas/ClientesPage.tsx'
+import { FinalizadosPage } from './paginas/FinalizadosPage.tsx'
 import { InicioPage } from './paginas/InicioPage.tsx'
 import { LoginPage } from './paginas/LoginPage.tsx'
 import { ProspectosPage } from './paginas/ProspectosPage.tsx'
@@ -32,10 +33,18 @@ function App() {
             }
           />
           <Route
-            path="registrar"
+            path="prospectos/registrar"
             element={
-              <RutaProtegida roles={rolesDe('/registrar')}>
+              <RutaProtegida roles={ROLES_REGISTRAR}>
                 <RegistroProspectoForm />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="finalizados"
+            element={
+              <RutaProtegida roles={rolesDe('/finalizados')}>
+                <FinalizadosPage />
               </RutaProtegida>
             }
           />
