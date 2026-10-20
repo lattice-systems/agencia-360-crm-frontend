@@ -145,12 +145,14 @@ export const handlers = [
   http.patch(`${URL_PROSPECTOS}/:id/etapa`, async ({ params, request }) => {
     const ruta = `${URL_PROSPECTOS}/${params.id}/etapa`
     const actor = actorDe(request)
-    const { etapa, motivoCierre, clienteRechazaApp, correoCliente } = (await request.json()) as {
-      etapa?: unknown
-      motivoCierre?: unknown
-      clienteRechazaApp?: unknown
-      correoCliente?: unknown
-    }
+    const { etapa, motivoCierre, clienteRechazaApp, correoCliente, precioTotal } =
+      (await request.json()) as {
+        etapa?: unknown
+        motivoCierre?: unknown
+        clienteRechazaApp?: unknown
+        correoCliente?: unknown
+        precioTotal?: unknown
+      }
     if (!esEtapa(etapa)) {
       return apiError(400, 'Bad Request', 'Etapa no válida', ruta)
     }
@@ -185,6 +187,13 @@ export const handlers = [
     const bloqueo = bloqueoDelVendedor(prospecto.etapa, etapa)
     if (bloqueo) {
       return apiError(409, 'Conflict', bloqueo, ruta)
+    }
+    // Al pasar a Pago el vendedor captura el precio total (ERP-1.1).
+    if (etapa === 'PAGO') {
+      if (typeof precioTotal !== 'number' || precioTotal <= 0) {
+        return apiError(400, 'Bad Request', 'Captura el precio total de la venta', ruta)
+      }
+      prospecto.precioTotal = precioTotal
     }
     // Para finalizar hace falta el correo, salvo que el cliente no quiera la app.
     if (etapa === 'FINALIZADO' && clienteRechazaApp !== true) {

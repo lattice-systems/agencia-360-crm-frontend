@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ import { Separator } from '@/components/ui/separator'
 import { useMensajeDeError } from '../api/useConsulta.ts'
 import { cambiarEtapa } from './api.ts'
 import { EtapaChip } from './EtapaChip.tsx'
+import { textoAMonto } from './formato.ts'
 import { HistorialEtapas } from './HistorialEtapas.tsx'
 import { SelectorMotivoCierre } from './SelectorMotivoCierre.tsx'
 import {
@@ -42,6 +44,7 @@ interface Props {
 
 const SIN_ETAPA = 'Elige la nueva etapa.'
 const SIN_MOTIVO = 'Elige el motivo de cierre.'
+const SIN_PRECIO = 'Escribe el precio total de la venta.'
 
 /**
  * Cambio de etapa con confirmación explícita (CRM-1.1, mockup p. 16). Desde las
@@ -58,7 +61,8 @@ export function DialogoCambiarEtapa({
   const mensajeDeError = useMensajeDeError()
   const [etapa, setEtapa] = useState<Etapa | ''>('')
   const [motivo, setMotivo] = useState<MotivoCierre | null>(null)
-  const [errores, setErrores] = useState<{ etapa?: string; motivo?: string }>({})
+  const [precio, setPrecio] = useState('')
+  const [errores, setErrores] = useState<{ etapa?: string; motivo?: string; precio?: string }>({})
   const [errorApi, setErrorApi] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
   const [abiertoPara, setAbiertoPara] = useState<number | null>(null)
@@ -68,6 +72,7 @@ export function DialogoCambiarEtapa({
     setAbiertoPara(prospecto.id)
     setEtapa(etapaSugerida ?? '')
     setMotivo(null)
+    setPrecio('')
     setErrores({})
     setErrorApi(null)
   }
@@ -79,12 +84,19 @@ export function DialogoCambiarEtapa({
 
   async function guardar() {
     if (!prospecto) return
+    const precioTotal = textoAMonto(precio)
     const nuevosErrores = {
       etapa: etapa ? undefined : SIN_ETAPA,
       motivo: etapa === 'CERRADO' && !motivo ? SIN_MOTIVO : undefined,
+      precio:
+        etapa === 'PAGO' && (Number.isNaN(precioTotal) || precioTotal <= 0)
+          ? precio.trim()
+            ? 'Escribe un monto válido, por ejemplo 489,900.00.'
+            : SIN_PRECIO
+          : undefined,
     }
     setErrores(nuevosErrores)
-    if (nuevosErrores.etapa || nuevosErrores.motivo || !etapa) return
+    if (nuevosErrores.etapa || nuevosErrores.motivo || nuevosErrores.precio || !etapa) return
 
     setGuardando(true)
     setErrorApi(null)
@@ -93,6 +105,7 @@ export function DialogoCambiarEtapa({
         prospecto.id,
         etapa,
         etapa === 'CERRADO' && motivo ? motivo : undefined,
+        etapa === 'PAGO' ? { precioTotal } : {},
       )
       setAbiertoPara(null)
       onCambiado(actualizado)
@@ -154,6 +167,33 @@ export function DialogoCambiarEtapa({
                 errors={errores.etapa ? [{ message: errores.etapa }] : []}
               />
             </Field>
+
+            {etapa === 'PAGO' && (
+              <Field data-invalid={!!errores.precio}>
+                <FieldLabel htmlFor="precio-total">Precio total de la venta (MXN)</FieldLabel>
+                <Input
+                  id="precio-total"
+                  inputMode="decimal"
+                  placeholder="489,900.00"
+                  value={precio}
+                  onChange={(e) => {
+                    setPrecio(e.target.value)
+                    setErrores({})
+                  }}
+                  aria-invalid={!!errores.precio || undefined}
+                  aria-describedby={
+                    errores.precio ? 'precio-total-ayuda precio-total-error' : 'precio-total-ayuda'
+                  }
+                />
+                <FieldDescription id="precio-total-ayuda">
+                  Contabilidad lo revisa al validar los pagos y lo puede corregir.
+                </FieldDescription>
+                <FieldError
+                  id="precio-total-error"
+                  errors={errores.precio ? [{ message: errores.precio }] : []}
+                />
+              </Field>
+            )}
 
             {etapa === 'CERRADO' && (
               <div className="flex flex-col gap-2">

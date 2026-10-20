@@ -244,9 +244,35 @@ describe('Cambio de etapa', () => {
     const { usuario, dialogo } = await abrirCambio('Pasar Rosa Díaz a Visita')
 
     await elegirEnSelect(usuario, within(dialogo).getByRole('combobox', { name: 'Nueva etapa' }), 'Pago')
+    await usuario.type(within(dialogo).getByLabelText('Precio total de la venta (MXN)'), '489900')
     await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar etapa' }))
 
     expect(await screen.findByText('Rosa Díaz pasó a la etapa Pago.')).toBeInTheDocument()
+  })
+
+  it('al pasar a Pago pide el precio total de la venta', async () => {
+    let recibido: unknown
+    server.use(
+      http.patch(`${URL_PROSPECTOS}/:id/etapa`, async ({ request }) => {
+        recibido = await request.clone().json()
+      }),
+    )
+    const { usuario, dialogo } = await abrirCambio('Pasar Marta Hernández a Pago')
+
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar etapa' }))
+    expect(within(dialogo).getByText('Escribe el precio total de la venta.')).toBeInTheDocument()
+    expect(recibido).toBeUndefined()
+
+    await usuario.type(within(dialogo).getByLabelText('Precio total de la venta (MXN)'), 'mucho')
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar etapa' }))
+    expect(within(dialogo).getByText('Escribe un monto válido, por ejemplo 489,900.00.')).toBeInTheDocument()
+
+    await usuario.clear(within(dialogo).getByLabelText('Precio total de la venta (MXN)'))
+    await usuario.type(within(dialogo).getByLabelText('Precio total de la venta (MXN)'), '$489,900.50')
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar etapa' }))
+
+    expect(await screen.findByText('Marta Hernández pasó a la etapa Pago.')).toBeInTheDocument()
+    expect(recibido).toEqual({ etapa: 'PAGO', precioTotal: 489900.5 })
   })
 
   it('Cerrar llega con Cerrado elegido y exige uno de los tres motivos', async () => {

@@ -10,6 +10,16 @@ export function formatearTelefono(telefono: string | null): string {
     : telefono
 }
 
+// Monto capturado en un campo de texto: acepta "$489,900.00", "489900" o
+// "489900.5". NaN si no es un monto con hasta 10 enteros y 2 decimales (lo que
+// admite numeric(12,2) en el backend).
+const MONTO = /^\d{1,10}(\.\d{1,2})?$/
+
+export function textoAMonto(texto: string): number {
+  const limpio = texto.replace(/[\s$,]/g, '').replace(/MXN$/i, '')
+  return MONTO.test(limpio) ? Number(limpio) : Number.NaN
+}
+
 /** Solo los dígitos de un teléfono capturado con espacios, guiones o paréntesis. */
 export function soloDigitos(telefono: string): string {
   return telefono.replace(/[\s().-]/g, '')
