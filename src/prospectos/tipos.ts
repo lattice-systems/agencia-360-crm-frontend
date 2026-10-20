@@ -96,6 +96,15 @@ export interface Prospecto {
   cierrePendiente?: boolean
   /** Precio total de la venta; lo captura el vendedor al pasar a Pago (ERP-1.1). */
   precioTotal?: number | null
+  /** Solo en finalizados: la unidad que eligió Facturación (CRM-1.4). */
+  vehiculo?: VehiculoVendido | null
+}
+
+/** En pantalla, `modelo` es el Tipo (Sentra) y `anio` el Modelo (2026), como en la factura. */
+export interface VehiculoVendido {
+  vin: string
+  modelo: string
+  anio: number
 }
 
 /** Respuesta del registro: el prospecto y si su contacto ya existía. */
