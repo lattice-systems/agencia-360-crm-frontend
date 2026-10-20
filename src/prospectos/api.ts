@@ -58,7 +58,8 @@ export function cambiarEtapa(
   {
     clienteRechazaApp = false,
     correoCliente,
-  }: { clienteRechazaApp?: boolean; correoCliente?: string } = {},
+    precioTotal,
+  }: { clienteRechazaApp?: boolean; correoCliente?: string; precioTotal?: number } = {},
 ): Promise<Prospecto> {
   // Al finalizar: si el cliente no quiere la app, no se le crea la cuenta; si
   // sí la quiere y el prospecto no tiene correo, se manda el que capturó el
@@ -70,6 +71,7 @@ export function cambiarEtapa(
       ...(motivoCierre === undefined ? {} : { motivoCierre }),
       ...(clienteRechazaApp ? { clienteRechazaApp } : {}),
       ...(correoCliente ? { correoCliente } : {}),
+      ...(precioTotal !== undefined ? { precioTotal } : {}),
     },
   })
 }

@@ -94,6 +94,8 @@ export interface Prospecto {
   ultimaEtapa?: Etapa | null
   /** Hay una solicitud de cierre esperando al Administrador. */
   cierrePendiente?: boolean
+  /** Precio total de la venta; lo captura el vendedor al pasar a Pago (ERP-1.1). */
+  precioTotal?: number | null
 }
 
 /** Respuesta del registro: el prospecto y si su contacto ya existía. */
