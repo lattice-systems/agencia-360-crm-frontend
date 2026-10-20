@@ -43,7 +43,9 @@ describe('App', () => {
     renderApp('/')
     await screen.findByRole('table', { name: 'Prospectos' })
 
-    await user.click(menuPrincipal().getByRole('link', { name: 'Registrar' }))
+    // Registrar no está en el menú: se entra con el botón de la lista.
+    expect(menuPrincipal().queryByRole('link', { name: 'Registrar' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('link', { name: 'Registrar prospecto' }))
     expect(
       screen.getByRole('heading', { level: 1, name: 'Registrar prospecto' }),
     ).toBeInTheDocument()
@@ -57,7 +59,7 @@ describe('App', () => {
   it('muestra en la lista al prospecto recién registrado', async () => {
     conSesion('VENTAS')
     const user = userEvent.setup()
-    renderApp('/registrar')
+    renderApp('/prospectos/registrar')
 
     await user.type(screen.getByLabelText(/Nombre completo/), 'Ana López')
     await user.type(screen.getByLabelText('Teléfono'), '4771234567')

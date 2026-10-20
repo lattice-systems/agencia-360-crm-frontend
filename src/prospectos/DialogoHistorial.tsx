@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { EtapaChip } from './EtapaChip.tsx'
 import { HistorialEtapas } from './HistorialEtapas.tsx'
-import { RESPONSABLE_DE_ETAPA, type Prospecto } from './tipos.ts'
+import { NOMBRES_MOTIVO, RESPONSABLE_DE_ETAPA, type Prospecto } from './tipos.ts'
 
 interface Props {
   /** Con null el diálogo está cerrado. */
@@ -54,7 +54,8 @@ export function DialogoHistorial({ prospecto, onCerrar }: Props) {
             )}
             {prospecto.etapa === 'CERRADO' && prospecto.motivoCierre && (
               <p className="text-sm">
-                <span className="font-medium">Motivo de cierre:</span> {prospecto.motivoCierre}
+                <span className="font-medium">Motivo de cierre:</span>{' '}
+                {NOMBRES_MOTIVO[prospecto.motivoCierre]}
               </p>
             )}
             <HistorialEtapas prospectoId={prospecto.id} />

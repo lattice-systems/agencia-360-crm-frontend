@@ -10,12 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Textarea } from '@/components/ui/textarea'
 import { useMensajeDeError } from '../api/useConsulta.ts'
 import { solicitarCierre } from './api.ts'
 import { EtapaChip } from './EtapaChip.tsx'
-import type { Prospecto } from './tipos.ts'
+import { SelectorMotivoCierre } from './SelectorMotivoCierre.tsx'
+import type { MotivoCierre, Prospecto } from './tipos.ts'
 
 interface Props {
   /** Prospecto en Pago, Facturación o Entrega; con null está cerrado. */
@@ -24,22 +23,23 @@ interface Props {
   onSolicitado: (prospecto: Prospecto) => void
 }
 
-const SIN_MOTIVO = 'Escribe el motivo de cierre.'
+const SIN_MOTIVO = 'Elige el motivo de cierre.'
 
 /**
  * Desde Pago en adelante el vendedor no cierra el prospecto: envía una
- * solicitud con el motivo y el Administrador del ERP decide (decisión del PO).
+ * solicitud con uno de los motivos fijos (CRM-1.2) y el Administrador del ERP
+ * decide (decisión del PO).
  */
 export function DialogoSolicitarCierre({ prospecto, onCerrar, onSolicitado }: Props) {
   const mensajeDeError = useMensajeDeError()
-  const [motivo, setMotivo] = useState('')
+  const [motivo, setMotivo] = useState<MotivoCierre | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
   const [abiertoPara, setAbiertoPara] = useState<number | null>(null)
 
   if (prospecto && abiertoPara !== prospecto.id) {
     setAbiertoPara(prospecto.id)
-    setMotivo('')
+    setMotivo(null)
     setError(null)
   }
 
@@ -50,14 +50,14 @@ export function DialogoSolicitarCierre({ prospecto, onCerrar, onSolicitado }: Pr
 
   async function enviar() {
     if (!prospecto) return
-    if (!motivo.trim()) {
+    if (!motivo) {
       setError(SIN_MOTIVO)
       return
     }
     setEnviando(true)
     setError(null)
     try {
-      await solicitarCierre(prospecto.id, motivo.trim())
+      await solicitarCierre(prospecto.id, motivo)
       setAbiertoPara(null)
       onSolicitado({ ...prospecto, cierrePendiente: true })
     } catch (e) {
@@ -86,22 +86,15 @@ export function DialogoSolicitarCierre({ prospecto, onCerrar, onSolicitado }: Pr
               Etapa actual
               <EtapaChip etapa={prospecto.etapa} />
             </div>
-            <Field data-invalid={error === SIN_MOTIVO}>
-              <FieldLabel htmlFor="motivo-solicitud">Motivo de cierre</FieldLabel>
-              <Textarea
-                id="motivo-solicitud"
-                value={motivo}
-                maxLength={200}
-                rows={3}
-                onChange={(e) => setMotivo(e.target.value)}
-                aria-invalid={error === SIN_MOTIVO || undefined}
-                aria-describedby={error === SIN_MOTIVO ? 'motivo-solicitud-error' : undefined}
-              />
-              <FieldError
-                id="motivo-solicitud-error"
-                errors={error === SIN_MOTIVO ? [{ message: SIN_MOTIVO }] : []}
-              />
-            </Field>
+            <SelectorMotivoCierre
+              id="motivo-solicitud"
+              valor={motivo}
+              onCambiar={(elegido) => {
+                setMotivo(elegido)
+                setError(null)
+              }}
+              error={error === SIN_MOTIVO ? SIN_MOTIVO : undefined}
+            />
             {error && error !== SIN_MOTIVO && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>

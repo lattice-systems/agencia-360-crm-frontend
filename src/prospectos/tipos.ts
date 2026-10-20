@@ -55,6 +55,23 @@ export const RESPONSABLE_DE_ETAPA: Partial<Record<Etapa, string>> = {
   FACTURACION: 'Facturación emite la factura',
 }
 
+// Motivos de cierre fijos (CRM-1.2, decisión del PO para el Sprint 2).
+export const MOTIVOS_CIERRE = [
+  'SE_FUE_POR_OTRA_MARCA',
+  'PERDIO_EL_INTERES',
+  'RECHAZO_DE_FINANCIAMIENTO',
+] as const
+
+/** SIN_CATEGORIA solo lo tienen los cierres de antes, cuando el motivo era texto libre. */
+export type MotivoCierre = (typeof MOTIVOS_CIERRE)[number] | 'SIN_CATEGORIA'
+
+export const NOMBRES_MOTIVO: Record<MotivoCierre, string> = {
+  SE_FUE_POR_OTRA_MARCA: 'Se fue por otra marca',
+  PERDIO_EL_INTERES: 'Perdió el interés',
+  RECHAZO_DE_FINANCIAMIENTO: 'Rechazo de financiamiento',
+  SIN_CATEGORIA: 'Sin categoría',
+}
+
 export interface ProspectoNuevo {
   nombre: string
   telefono?: string
@@ -72,7 +89,7 @@ export interface Prospecto {
   /** Fecha y hora del último cambio de etapa. */
   ultimoCambio?: string
   /** Solo si está cerrado. */
-  motivoCierre?: string | null
+  motivoCierre?: MotivoCierre | null
   /** Etapa en la que estaba al cerrarse; solo si está cerrado. */
   ultimaEtapa?: Etapa | null
   /** Hay una solicitud de cierre esperando al Administrador. */
@@ -94,6 +111,6 @@ export interface SolicitudCierre {
   prospectoId: number
   prospectoNombre: string
   etapa: Etapa
-  motivo: string
+  motivo: MotivoCierre
   estado: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA'
 }

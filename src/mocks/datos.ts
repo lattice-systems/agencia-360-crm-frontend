@@ -71,6 +71,38 @@ const PROSPECTOS_INICIALES: readonly Prospecto[] = [
     ultimoCambio: '2026-10-11T20:00:00Z',
     cierrePendiente: true,
   },
+  {
+    id: 7,
+    nombre: 'Roberto Salas',
+    telefono: '4775550112',
+    correo: 'roberto.s@example.com',
+    etapa: 'FINALIZADO',
+    vendedorId: 1,
+    creadoEn: '2026-10-01T15:00:00Z',
+    ultimoCambio: '2026-10-10T19:30:00Z',
+  },
+  {
+    id: 8,
+    nombre: 'Jorge Medina',
+    telefono: '4775550106',
+    correo: null,
+    etapa: 'CERRADO',
+    vendedorId: 1,
+    creadoEn: '2026-10-02T15:00:00Z',
+    ultimoCambio: '2026-10-09T17:00:00Z',
+    motivoCierre: 'SE_FUE_POR_OTRA_MARCA',
+    ultimaEtapa: 'COTIZACION',
+  },
+  {
+    id: 9,
+    nombre: 'Daniela Cruz',
+    telefono: '4775550113',
+    correo: 'daniela.c@example.com',
+    etapa: 'FINALIZADO',
+    vendedorId: 2,
+    creadoEn: '2026-10-03T15:00:00Z',
+    ultimoCambio: '2026-10-12T18:15:00Z',
+  },
 ]
 
 let prospectos: Prospecto[] = []

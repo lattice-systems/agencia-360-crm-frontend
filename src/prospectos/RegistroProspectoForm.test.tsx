@@ -9,7 +9,7 @@ import { URL_PROSPECTOS } from './api.ts'
 
 function abrir() {
   conSesion('VENTAS')
-  renderApp('/registrar')
+  renderApp('/prospectos/registrar')
   const usuario = userEvent.setup()
   return {
     usuario,

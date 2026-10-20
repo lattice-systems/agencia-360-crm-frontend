@@ -17,3 +17,11 @@ export function reasignarProspecto(id: number, vendedorId: number) {
     cuerpo: { vendedorId },
   })
 }
+
+/** CRM-UX-1: varios prospectos al mismo vendedor; todos o ninguno. */
+export function reasignarProspectos(prospectoIds: number[], vendedorId: number) {
+  return peticion<Prospecto[]>(`${URL_PROSPECTOS}/reasignaciones`, {
+    metodo: 'POST',
+    cuerpo: { prospectoIds, vendedorId },
+  })
+}

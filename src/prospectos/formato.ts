@@ -23,6 +23,12 @@ const fechaCorta = new Intl.DateTimeFormat('es-MX', {
   hour12: false,
 })
 
+const soloFecha = new Intl.DateTimeFormat('es-MX', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+})
+
 const fechaLarga = new Intl.DateTimeFormat('es-MX', {
   day: 'numeric',
   month: 'short',
@@ -37,6 +43,11 @@ export function formatearFechaCorta(iso: string): string {
   const valor = (tipo: Intl.DateTimeFormatPartTypes) =>
     partes.find((p) => p.type === tipo)?.value ?? ''
   return `${valor('day')} ${valor('month').replace('.', '')}, ${valor('hour')}:${valor('minute')}`
+}
+
+/** "13 oct 2026" (fecha de entrega en Finalizados). */
+export function formatearFecha(iso: string): string {
+  return soloFecha.format(new Date(iso)).replace(/([a-z]{3})\./, '$1')
 }
 
 /** "13 oct 2026, 10:24 a.m." (historial de etapas). */

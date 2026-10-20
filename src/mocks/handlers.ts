@@ -3,6 +3,7 @@ import { URL_PROSPECTOS } from '../prospectos/api.ts'
 import {
   esEtapaInicial,
   estaEnProcesoDeVenta,
+  MOTIVOS_CIERRE,
   ETAPAS,
   type Etapa,
   type Prospecto,
@@ -45,6 +46,11 @@ function visible(id: number, actor: ActorMock | null): Prospecto | undefined {
 
 const nombreDe = (actor: ActorMock | null) =>
   (actor && buscarUsuario(actor.uid)?.nombre) ?? null
+
+/** Uno de los tres motivos de cierre que fijó el PO (CRM-1.2). */
+function esMotivoCierre(valor: unknown): valor is (typeof MOTIVOS_CIERRE)[number] {
+  return (MOTIVOS_CIERRE as readonly unknown[]).includes(valor)
+}
 
 /** Motivo de bloqueo cuando el vendedor intenta un cambio que no le toca. */
 function bloqueoDelVendedor(actual: Etapa, nueva: Etapa): string | null {
@@ -139,9 +145,11 @@ export const handlers = [
   http.patch(`${URL_PROSPECTOS}/:id/etapa`, async ({ params, request }) => {
     const ruta = `${URL_PROSPECTOS}/${params.id}/etapa`
     const actor = actorDe(request)
-    const { etapa, motivoCierre } = (await request.json()) as {
+    const { etapa, motivoCierre, clienteRechazaApp, correoCliente } = (await request.json()) as {
       etapa?: unknown
       motivoCierre?: unknown
+      clienteRechazaApp?: unknown
+      correoCliente?: unknown
     }
     if (!esEtapa(etapa)) {
       return apiError(400, 'Bad Request', 'Etapa no válida', ruta)
@@ -178,12 +186,25 @@ export const handlers = [
     if (bloqueo) {
       return apiError(409, 'Conflict', bloqueo, ruta)
     }
+    // Para finalizar hace falta el correo, salvo que el cliente no quiera la app.
+    if (etapa === 'FINALIZADO' && clienteRechazaApp !== true) {
+      if (typeof correoCliente === 'string' && correoCliente.trim()) {
+        prospecto.correo = correoCliente.trim().toLowerCase()
+      }
+      if (!prospecto.correo) {
+        return apiError(
+          400,
+          'Bad Request',
+          'Captura el correo del cliente para crear su cuenta de la app, o marca que no la quiere',
+          ruta,
+        )
+      }
+    }
     if (etapa === 'CERRADO') {
-      const motivo = typeof motivoCierre === 'string' ? motivoCierre.trim() : ''
-      if (!motivo) {
+      if (!esMotivoCierre(motivoCierre)) {
         return apiError(400, 'Bad Request', 'El motivo de cierre es obligatorio', ruta)
       }
-      prospecto.motivoCierre = motivo
+      prospecto.motivoCierre = motivoCierre
       prospecto.ultimaEtapa = prospecto.etapa
     }
     moverProspecto(prospecto, etapa, 'CRM', nombreDe(actor))
@@ -201,7 +222,7 @@ export const handlers = [
       return apiError(404, 'Not Found', `No existe el prospecto ${params.id}`, ruta)
     }
     const { motivo } = (await request.json()) as { motivo?: unknown }
-    if (typeof motivo !== 'string' || !motivo.trim()) {
+    if (!esMotivoCierre(motivo)) {
       return apiError(400, 'Bad Request', 'El motivo de cierre es obligatorio', ruta)
     }
     if (!estaEnProcesoDeVenta(prospecto.etapa)) {
@@ -217,7 +238,7 @@ export const handlers = [
         prospectoId: prospecto.id,
         prospectoNombre: prospecto.nombre,
         etapa: prospecto.etapa,
-        motivo: motivo.trim(),
+        motivo,
         estado: 'PENDIENTE',
       },
       { status: 201 },

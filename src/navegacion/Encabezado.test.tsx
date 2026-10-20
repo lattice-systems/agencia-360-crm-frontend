@@ -35,7 +35,7 @@ describe('Migas de pan en la barra superior (CRM-UX-2)', () => {
 
   it('Registrar cuelga de Prospectos', () => {
     conSesion('VENTAS')
-    renderApp('/registrar')
+    renderApp('/prospectos/registrar')
 
     expect(migas()).toEqual([
       ['Prospectos', '/prospectos'],
@@ -53,7 +53,7 @@ describe('Migas de pan en la barra superior (CRM-UX-2)', () => {
 
   it('las migas quedan solo en la barra superior, no repetidas en la página', () => {
     conSesion('VENTAS')
-    renderApp('/registrar')
+    renderApp('/prospectos/registrar')
 
     expect(screen.getAllByRole('navigation', { name: 'Migas de pan' })).toHaveLength(1)
     expect(screen.queryByRole('navigation', { name: 'Ruta' })).not.toBeInTheDocument()
