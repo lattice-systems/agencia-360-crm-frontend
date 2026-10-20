@@ -559,9 +559,12 @@ describe('Finalizados', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Mis prospectos finalizados' }),
     ).toBeInTheDocument()
-    expect(await filaDe('Roberto Salas')).toHaveTextContent('Finalizado')
+    // En Finalizados la columna de etapa se vuelve Vehículo: todos son finalizados.
     expect(within(await tabla()).getAllByRole('row')).toHaveLength(2)
     expect(screen.getByRole('columnheader', { name: 'Fecha de entrega' })).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'Vehículo' })).toBeInTheDocument()
+    expect(await filaDe('Roberto Salas')).toHaveTextContent('Sentra 2026')
+    expect(await filaDe('Roberto Salas')).toHaveTextContent('3N1AB8CV5PY123456')
     expect(await filaDe('Roberto Salas')).toHaveTextContent('10 oct 2026')
     // El vendedor solo ve los suyos: no hay filtro por vendedor.
     expect(screen.queryByRole('combobox', { name: 'Vendedor' })).not.toBeInTheDocument()
@@ -587,6 +590,8 @@ describe('Finalizados', () => {
     ).toBeInTheDocument()
     expect(await filaDe('Roberto Salas')).toHaveTextContent('Valeria Vendedora')
     expect(await filaDe('Daniela Cruz')).toHaveTextContent('Víctor Vendedor')
+    // Facturación todavía no eligió su unidad.
+    expect(await filaDe('Daniela Cruz')).toHaveTextContent('Sin unidad asignada')
     const nombres = within(await tabla())
       .getAllByRole('row')
       .slice(1)

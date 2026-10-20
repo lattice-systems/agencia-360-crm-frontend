@@ -563,6 +563,24 @@ function CasillaSeleccion({
   )
 }
 
+/**
+ * La unidad que eligió Facturación para un finalizado (CRM-1.4): Tipo y Modelo
+ * como en la factura, con el VIN abajo.
+ */
+function Vehiculo({ prospecto }: { prospecto: Prospecto }) {
+  if (!prospecto.vehiculo) {
+    return <span className="text-sm text-muted-foreground">Sin unidad asignada</span>
+  }
+  return (
+    <span className="flex flex-col">
+      <span className="font-medium">
+        {prospecto.vehiculo.modelo} {prospecto.vehiculo.anio}
+      </span>
+      <span className="font-mono text-xs text-muted-foreground">{prospecto.vehiculo.vin}</span>
+    </span>
+  )
+}
+
 /** En un cerrado, por qué no se concretó (CRM-1.2). */
 function MotivoDelCierre({ prospecto }: { prospecto: Prospecto }) {
   if (prospecto.etapa !== 'CERRADO' || !prospecto.motivoCierre) return null
@@ -603,7 +621,7 @@ function Renglones({
               )}
               <TableHead>Prospecto</TableHead>
               <TableHead>Teléfono</TableHead>
-              <TableHead>Etapa</TableHead>
+              <TableHead>{finalizados ? 'Vehículo' : 'Etapa'}</TableHead>
               {mostrarVendedor && <TableHead>Vendedor</TableHead>}
               <TableHead>{finalizados ? 'Fecha de entrega' : 'Último cambio'}</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
@@ -629,10 +647,14 @@ function Renglones({
                   {formatearTelefono(p.telefono)}
                 </TableCell>
                 <TableCell>
-                  <div className="flex flex-col gap-1">
-                    <EtapaChip etapa={p.etapa} />
-                    <MotivoDelCierre prospecto={p} />
-                  </div>
+                  {finalizados ? (
+                    <Vehiculo prospecto={p} />
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      <EtapaChip etapa={p.etapa} />
+                      <MotivoDelCierre prospecto={p} />
+                    </div>
+                  )}
                 </TableCell>
                 {mostrarVendedor && <TableCell>{nombreVendedor(p)}</TableCell>}
                 <TableCell className="whitespace-nowrap text-muted-foreground tabular-nums">
@@ -674,6 +696,11 @@ function Renglones({
                 <MotivoDelCierre prospecto={p} />
               </div>
             </div>
+            {finalizados && (
+              <div className="px-4">
+                <Vehiculo prospecto={p} />
+              </div>
+            )}
             {(mostrarVendedor || finalizados) && (
               <p className="px-4 text-sm text-muted-foreground">
                 {[

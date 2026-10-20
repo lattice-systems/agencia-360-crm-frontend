@@ -80,6 +80,7 @@ const PROSPECTOS_INICIALES: readonly Prospecto[] = [
     vendedorId: 1,
     creadoEn: '2026-10-01T15:00:00Z',
     ultimoCambio: '2026-10-10T19:30:00Z',
+    vehiculo: { vin: '3N1AB8CV5PY123456', modelo: 'Sentra', anio: 2026 },
   },
   {
     id: 8,
