@@ -8,7 +8,8 @@ import {
   XCircle,
   type LucideIcon,
 } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   esEtapaInicial,
@@ -25,25 +26,13 @@ const SIGUIENTE: Partial<Record<Etapa, Etapa>> = {
   COTIZACION: 'PAGO',
 }
 
-// Un color por tipo de acción, para reconocerla de un vistazo (la guía de
-// estilos, sección 2: el color nunca va solo, siempre con texto e ícono):
-// - Avanzar usa el color de la etapa a la que lleva, igual que su chip.
-// - Finalizar es sólido: cierra la venta con éxito.
-// - Cerrar es rojo: termina el prospecto de inmediato.
-// - Solicitar cierre es neutro: no cierra, pide autorización.
-const COLOR_AVANZAR: Partial<Record<Etapa, string>> = {
-  VISITA: 'border-primary/25 bg-accent text-primary hover:bg-primary/15',
-  COTIZACION:
-    'border-[#5b3aa8]/25 bg-[#efeafb] text-[#5b3aa8] hover:bg-[#e3dbf7] dark:border-[#c4b2f2]/30 dark:bg-[#2a2140] dark:text-[#c4b2f2] dark:hover:bg-[#352a52]',
-  PAGO: 'border-advertencia/30 bg-advertencia-fondo text-advertencia hover:bg-advertencia/15',
-}
-const COLOR_FINALIZAR =
-  'border-exito bg-exito text-white hover:bg-exito/90 dark:text-[#0f1724]'
-const COLOR_CERRAR =
-  'border-destructive/30 bg-peligro-fondo text-destructive hover:bg-destructive/15'
-const COLOR_SOLICITAR = 'border-input bg-card text-foreground hover:bg-muted'
-const COLOR_PENDIENTE = 'border-transparent bg-muted text-muted-foreground'
-const COLOR_REASIGNAR = 'border-input bg-card text-foreground hover:bg-muted'
+// Una variante de Button por tipo de acción, para reconocerla de un vistazo
+// (el color nunca va solo, siempre con texto e ícono):
+// - Avanzar es secundario.
+// - Finalizar es el principal: cierra la venta con éxito.
+// - Cerrar es destructivo: termina el prospecto de inmediato.
+// - Solicitar cierre y Reasignar son outline: no cierran, piden o mueven.
+type Variante = ComponentProps<typeof Button>['variant']
 
 export interface ManejadoresAcciones {
   /** Solo el vendedor mueve etapas, finaliza y solicita cierres. */
@@ -58,7 +47,7 @@ export interface ManejadoresAcciones {
 }
 
 interface PropsBoton {
-  color: string
+  variante: Variante
   icono: LucideIcon
   /** Posición del ícono: después del texto para avanzar (flecha). */
   iconoAlFinal?: boolean
@@ -69,9 +58,9 @@ interface PropsBoton {
   onClick?: () => void
 }
 
-/** Botón compacto con color propio. 32 px en tabla y 44 px al tacto. */
+/** Botón compacto de la acción; más alto en las tarjetas del celular. */
 function BotonAccion({
-  color,
+  variante,
   icono: Icono,
   iconoAlFinal,
   etiqueta,
@@ -81,24 +70,18 @@ function BotonAccion({
   onClick,
 }: PropsBoton) {
   return (
-    <button
-      type="button"
+    <Button
+      variant={variante}
+      size={tactil ? 'lg' : 'default'}
       aria-label={etiqueta}
       disabled={disabled}
       onClick={onClick}
-      className={[
-        'inline-flex w-full items-center justify-center gap-1.5 rounded-md border px-2.5',
-        'text-[13px] leading-none font-medium whitespace-nowrap transition-colors',
-        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
-        'disabled:cursor-not-allowed disabled:opacity-100',
-        tactil ? 'min-h-11' : 'h-8',
-        color,
-      ].join(' ')}
+      className="w-full"
     >
-      {!iconoAlFinal && <Icono aria-hidden="true" className="size-3.5 shrink-0" />}
+      {!iconoAlFinal && <Icono aria-hidden="true" data-icon="inline-start" />}
       {texto}
-      {iconoAlFinal && <Icono aria-hidden="true" className="size-3.5 shrink-0" />}
-    </button>
+      {iconoAlFinal && <Icono aria-hidden="true" data-icon="inline-end" />}
+    </Button>
   )
 }
 
@@ -116,19 +99,15 @@ function BotonVer({
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size={tactil ? 'icon-lg' : 'icon'}
             aria-label={`Ver historial de ${prospecto.nombre}`}
             onClick={onClick}
-            className={[
-              'inline-flex shrink-0 items-center justify-center rounded-md text-muted-foreground',
-              'transition-colors hover:bg-muted hover:text-foreground',
-              'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
-              tactil ? 'size-11' : 'size-8',
-            ].join(' ')}
+            className="text-muted-foreground"
           >
-            <Eye aria-hidden="true" className="size-4" />
-          </button>
+            <Eye aria-hidden="true" />
+          </Button>
         </TooltipTrigger>
         <TooltipContent>Ver historial</TooltipContent>
       </Tooltip>
@@ -163,7 +142,7 @@ export function AccionesProspecto({
   if (vendedor && siguiente) {
     principal = (
       <BotonAccion
-        color={COLOR_AVANZAR[siguiente] ?? ''}
+        variante="secondary"
         icono={ArrowRight}
         iconoAlFinal
         tactil={tactil}
@@ -175,7 +154,7 @@ export function AccionesProspecto({
   } else if (vendedor && p.etapa === 'ENTREGA') {
     principal = (
       <BotonAccion
-        color={COLOR_FINALIZAR}
+        variante="default"
         icono={CheckCheck}
         tactil={tactil}
         etiqueta={`Finalizar ${p.nombre}`}
@@ -186,7 +165,7 @@ export function AccionesProspecto({
   } else if (acciones.puedeReasignar) {
     principal = (
       <BotonAccion
-        color={COLOR_REASIGNAR}
+        variante="outline"
         icono={UserRoundCog}
         tactil={tactil}
         etiqueta={`Reasignar a ${p.nombre}`}
@@ -200,7 +179,7 @@ export function AccionesProspecto({
   if (vendedor && esEtapaInicial(p.etapa)) {
     secundaria = (
       <BotonAccion
-        color={COLOR_CERRAR}
+        variante="destructive"
         icono={XCircle}
         tactil={tactil}
         etiqueta={`Cerrar ${p.nombre}`}
@@ -211,7 +190,7 @@ export function AccionesProspecto({
   } else if (vendedor && estaEnProcesoDeVenta(p.etapa)) {
     secundaria = p.cierrePendiente ? (
       <BotonAccion
-        color={COLOR_PENDIENTE}
+        variante="secondary"
         icono={Clock}
         tactil={tactil}
         disabled
@@ -220,7 +199,7 @@ export function AccionesProspecto({
       />
     ) : (
       <BotonAccion
-        color={COLOR_SOLICITAR}
+        variante="outline"
         icono={SendHorizontal}
         tactil={tactil}
         etiqueta={`Solicitar cierre de ${p.nombre}`}

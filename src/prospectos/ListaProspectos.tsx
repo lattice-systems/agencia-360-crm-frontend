@@ -39,7 +39,14 @@ import { deLaPagina } from '@/lib/paginacion'
 import type { UsuarioApi } from '../api/acceso.ts'
 import { useConsulta, useMensajeDeError } from '../api/useConsulta.ts'
 import { EncabezadoPagina } from '../componentes/EncabezadoPagina.tsx'
-import { EstadoVacio } from '../componentes/EstadoVacio.tsx'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { Paginacion } from '../componentes/Paginacion.tsx'
 import { TablaCargando } from '../componentes/TablaCargando.tsx'
 import { RUTA_REGISTRAR } from '../navegacion/secciones.ts'
@@ -366,28 +373,40 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
           {filtrados.length === 0 ? (
             <Card>
               {total === 0 && finalizados ? (
-                <EstadoVacio
-                  icono={BadgeCheck}
-                  titulo="Aún no hay prospectos finalizados"
-                  descripcion="Aquí aparecen cuando el vendedor finaliza la entrega."
-                />
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><BadgeCheck /></EmptyMedia>
+                    <EmptyTitle>Aún no hay prospectos finalizados</EmptyTitle>
+                    <EmptyDescription>
+                      Aquí aparecen cuando el vendedor finaliza la entrega.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               ) : total === 0 ? (
-                <EstadoVacio
-                  icono={Users}
-                  titulo={esVendedor ? 'Aún no tienes prospectos' : 'Aún no hay prospectos'}
-                  descripcion={
-                    esVendedor
-                      ? 'Registra el primer contacto para comenzar.'
-                      : 'Aquí aparecerán los prospectos que registren los vendedores.'
-                  }
-                  accion={botonRegistrar}
-                />
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><Users /></EmptyMedia>
+                    <EmptyTitle>
+                      {esVendedor ? 'Aún no tienes prospectos' : 'Aún no hay prospectos'}
+                    </EmptyTitle>
+                    <EmptyDescription>
+                      {esVendedor
+                        ? 'Registra el primer contacto para comenzar.'
+                        : 'Aquí aparecerán los prospectos que registren los vendedores.'}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  {botonRegistrar && <EmptyContent>{botonRegistrar}</EmptyContent>}
+                </Empty>
               ) : (
-                <EstadoVacio
-                  icono={Search}
-                  titulo="Ningún prospecto coincide"
-                  descripcion="Prueba con otro nombre, teléfono, correo o etapa."
-                />
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><Search /></EmptyMedia>
+                    <EmptyTitle>Ningún prospecto coincide</EmptyTitle>
+                    <EmptyDescription>
+                      Prueba con otro nombre, teléfono, correo o etapa.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               )}
             </Card>
           ) : (
@@ -398,7 +417,7 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
                   aria-label="Prospectos seleccionados"
                   className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-accent px-4 py-3"
                 >
-                  <p className="text-sm font-medium text-primary">
+                  <p className="text-sm font-medium">
                     {seleccionados.length === 1
                       ? '1 prospecto seleccionado'
                       : `${seleccionados.length} prospectos seleccionados`}
@@ -686,7 +705,7 @@ function Renglones({
                 />
               )}
               <div className="min-w-0 flex-1">
-                <p className="nombre font-semibold text-primary">{p.nombre}</p>
+                <p className="nombre font-semibold">{p.nombre}</p>
                 <p className="text-sm text-muted-foreground tabular-nums">
                   {formatearTelefono(p.telefono) || p.correo}
                 </p>
@@ -794,7 +813,7 @@ function DialogoFinalizar({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-primary">¿Finalizar el prospecto?</AlertDialogTitle>
+          <AlertDialogTitle>¿Finalizar el prospecto?</AlertDialogTitle>
           <AlertDialogDescription>
             Confirma que ya entregaste la unidad a {prospecto?.nombre}. Un prospecto
             finalizado ya no cambia de etapa.

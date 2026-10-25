@@ -26,9 +26,9 @@ export function MenuPerfil() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="size-11 rounded-full p-0" aria-label={`Perfil de ${sesion.nombre}`}>
-          <Avatar className="size-9">
-            <AvatarFallback className="bg-primary text-sm font-semibold text-primary-foreground">
+        <Button variant="ghost" size="icon-lg" className="rounded-full" aria-label={`Perfil de ${sesion.nombre}`}>
+          <Avatar>
+            <AvatarFallback>
               {iniciales(sesion.nombre)}
             </AvatarFallback>
           </Avatar>

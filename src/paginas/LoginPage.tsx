@@ -2,9 +2,11 @@ import { ClipboardList, ShieldCheck, Users, type LucideIcon } from 'lucide-react
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
 import { iniciarSesion } from '../api/acceso.ts'
 import { mensajeDeError } from '../api/cliente.ts'
 import { CampoContrasena } from '../componentes/CampoContrasena.tsx'
@@ -56,16 +58,16 @@ export function LoginPage() {
 
   return (
     <main className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-      <aside className="hidden flex-col bg-primary p-12 text-primary-foreground lg:flex">
-        <img src="/agencia360-logo-blanco.svg" alt="Agencia360" className="h-auto w-[240px]" />
-        <span className="mt-8 w-fit rounded-full bg-white/10 px-3 py-1 text-sm text-marca-acento">
+      <aside className="hidden flex-col bg-muted p-12 lg:flex">
+        <img src="/agencia360-logo.svg" alt="Agencia360" className="h-auto w-[240px]" />
+        <Badge variant="outline" className="mt-8">
           Agencia360 · CRM
-        </span>
+        </Badge>
         <p className="mt-8 text-4xl font-bold">Todo en su lugar.</p>
-        <p className="mt-4 max-w-sm text-xl text-primary-foreground/85">
+        <p className="mt-4 max-w-sm text-xl text-muted-foreground">
           Gestiona tus prospectos y da continuidad a cada contacto.
         </p>
-        <div aria-hidden="true" className="my-10 h-px max-w-md bg-white/15" />
+        <Separator className="my-10 max-w-md" />
         <ul className="flex flex-col gap-6">
           {BENEFICIOS.map(({ icono: Icono, texto }) => (
             <li key={texto} className="flex items-center gap-3 text-lg">
@@ -74,7 +76,7 @@ export function LoginPage() {
             </li>
           ))}
         </ul>
-        <p className="mt-auto text-sm text-primary-foreground/75">
+        <p className="mt-auto text-sm text-muted-foreground">
           Una identidad. Cada área conectada.
         </p>
       </aside>
@@ -86,13 +88,13 @@ export function LoginPage() {
             alt="Agencia360"
             className="mb-10 h-auto w-[200px] lg:hidden"
           />
-          <h1 className="text-3xl font-bold text-primary">Iniciar sesión</h1>
+          <h1 className="text-3xl font-bold">Iniciar sesión</h1>
           <p className="mt-2 text-muted-foreground">Accede a Agencia360 · CRM</p>
 
           <form onSubmit={enviar} noValidate className="mt-8">
             <FieldGroup className="gap-5">
               {aviso && (
-                <Alert variant="advertencia" role="status">
+                <Alert variant="warning" role="status">
                   <AlertDescription>{aviso}</AlertDescription>
                 </Alert>
               )}
@@ -102,7 +104,6 @@ export function LoginPage() {
                   id="usuario"
                   name="usuario"
                   autoComplete="username"
-                  className="h-11"
                   value={usuario}
                   onChange={(e) => setUsuario(e.target.value)}
                 />
@@ -113,7 +114,6 @@ export function LoginPage() {
                   id="contrasena"
                   name="contrasena"
                   autoComplete="current-password"
-                  className="h-11"
                   value={contrasena}
                   onChange={(e) => setContrasena(e.target.value)}
                 />
@@ -123,7 +123,7 @@ export function LoginPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              <Button type="submit" className="mt-2 h-11 w-full" disabled={enviando}>
+              <Button type="submit" size="lg" className="mt-2 w-full" disabled={enviando}>
                 {enviando ? 'Entrando…' : 'Entrar al CRM'}
               </Button>
               <p className="text-sm text-muted-foreground">

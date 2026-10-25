@@ -87,7 +87,7 @@ export function DialogoReasignar({
     <Dialog open={prospecto !== null} onOpenChange={(abrir) => !abrir && cerrar()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">
+          <DialogTitle>
             Reasignar prospecto
           </DialogTitle>
           <DialogDescription>
@@ -122,7 +122,7 @@ export function DialogoReasignar({
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Alert variant="informacion" role="note">
+          <Alert role="note">
             <Info aria-hidden="true" />
             <AlertTitle>Cambiará la visibilidad</AlertTitle>
             <AlertDescription>

@@ -25,7 +25,13 @@ import {
 import { DialogoAgregarCliente } from '../clientes/DialogoAgregarCliente.tsx'
 import { DialogoCliente } from '../clientes/DialogoCliente.tsx'
 import { EncabezadoPagina } from '../componentes/EncabezadoPagina.tsx'
-import { EstadoVacio } from '../componentes/EstadoVacio.tsx'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { Paginacion } from '../componentes/Paginacion.tsx'
 import { TablaCargando } from '../componentes/TablaCargando.tsx'
 import { formatearTelefono } from '../prospectos/formato.ts'
@@ -142,21 +148,21 @@ export function ClientesPage() {
           </div>
 
           {filtrados.length === 0 ? (
-            <Card>
-              <EstadoVacio
-                icono={clientes.length === 0 ? Contact : Search}
-                titulo={
-                  clientes.length === 0
-                    ? 'Aún no hay clientes'
-                    : 'Ningún cliente coincide'
-                }
-                descripcion={
-                  clientes.length === 0
+            <Empty className="border">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  {clientes.length === 0 ? <Contact /> : <Search />}
+                </EmptyMedia>
+                <EmptyTitle>
+                  {clientes.length === 0 ? 'Aún no hay clientes' : 'Ningún cliente coincide'}
+                </EmptyTitle>
+                <EmptyDescription>
+                  {clientes.length === 0
                     ? 'Aparecen aquí cuando un prospecto llega a Finalizado.'
-                    : 'Prueba con otro nombre o correo.'
-                }
-              />
-            </Card>
+                    : 'Prueba con otro nombre o correo.'}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <>
               <ListaClientes

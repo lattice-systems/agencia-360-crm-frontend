@@ -88,7 +88,7 @@ export function DialogoReasignarVarios({
     <Dialog open={prospectos !== null} onOpenChange={(abrir) => !abrir && cerrar()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">Reasignar prospectos</DialogTitle>
+          <DialogTitle>Reasignar prospectos</DialogTitle>
           <DialogDescription>
             {cuantos === 1 ? '1 prospecto elegido' : `${cuantos} prospectos elegidos`}. Todos
             pasarán al mismo vendedor.
@@ -126,7 +126,7 @@ export function DialogoReasignarVarios({
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Alert variant="informacion" role="note">
+          <Alert role="note">
             <Info aria-hidden="true" />
             <AlertTitle>Cambiará la visibilidad</AlertTitle>
             <AlertDescription>

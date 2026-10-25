@@ -30,9 +30,9 @@ export function DialogoHistorial({ prospecto, onCerrar }: Props) {
     <Dialog open={prospecto !== null} onOpenChange={(abrir) => !abrir && onCerrar()}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">Historial de etapas</DialogTitle>
+          <DialogTitle>Historial de etapas</DialogTitle>
           <DialogDescription>
-            <span className="block text-base font-semibold text-primary">
+            <span className="block font-medium text-foreground">
               {prospecto?.nombre}
             </span>
             Cada cambio se registra con fecha y hora.
@@ -45,7 +45,7 @@ export function DialogoHistorial({ prospecto, onCerrar }: Props) {
               <EtapaChip etapa={prospecto.etapa} />
             </div>
             {responsable && (
-              <Alert variant="informacion" role="note">
+              <Alert role="note">
                 <Clock aria-hidden="true" />
                 <AlertDescription>
                   Avanza cuando {responsable.charAt(0).toLowerCase() + responsable.slice(1)}.

@@ -15,7 +15,7 @@ export function HistorialEtapas({ prospectoId }: { prospectoId: number }) {
 
   return (
     <section aria-labelledby="titulo-historial" className="flex flex-col gap-3">
-      <h3 id="titulo-historial" className="text-base font-semibold text-primary">
+      <h3 id="titulo-historial" className="text-base font-semibold">
         Historial de etapas
       </h3>
       {cargando ? (
@@ -37,7 +37,7 @@ export function HistorialEtapas({ prospectoId }: { prospectoId: number }) {
                 )}
               </span>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold text-primary">
+                <span className="text-sm font-semibold">
                   {NOMBRES_ETAPA[movimiento.etapa]}
                 </span>
                 <span className="text-sm text-muted-foreground">

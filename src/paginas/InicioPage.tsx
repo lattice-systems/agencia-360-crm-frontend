@@ -17,7 +17,7 @@ export function InicioPage() {
 
   return (
     <section className="flex flex-col gap-1">
-      <h1 className="text-2xl font-semibold text-primary">
+      <h1 className="text-2xl font-semibold">
         Hola, {sesion.nombre}
       </h1>
       <p className="text-sm text-muted-foreground">

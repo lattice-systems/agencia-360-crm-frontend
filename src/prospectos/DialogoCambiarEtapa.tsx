@@ -121,9 +121,9 @@ export function DialogoCambiarEtapa({
     <Dialog open={prospecto !== null} onOpenChange={(abrir) => !abrir && cerrar()}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">Cambiar etapa</DialogTitle>
+          <DialogTitle>Cambiar etapa</DialogTitle>
           <DialogDescription>
-            <span className="block text-base font-semibold text-primary">
+            <span className="block font-medium text-foreground">
               {prospecto?.nombre}
             </span>
             El cambio quedará registrado con fecha y hora.

@@ -16,7 +16,7 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { ErrorApi } from '../api/cliente.ts'
 import { useConsulta, useMensajeDeError } from '../api/useConsulta.ts'
-import { ChipEstado } from '../componentes/ChipEstado.tsx'
+import { Badge } from '@/components/ui/badge'
 import {
   abrirCuentaApp,
   activarCuentaApp,
@@ -48,7 +48,7 @@ export function DialogoCliente({
     <Dialog open={cliente !== null} onOpenChange={(abrir) => !abrir && onCerrar()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">{cliente?.nombre}</DialogTitle>
+          <DialogTitle>{cliente?.nombre}</DialogTitle>
           <DialogDescription>{cliente?.correo ?? SIN_CORREO}</DialogDescription>
         </DialogHeader>
         {cliente && (
@@ -143,15 +143,15 @@ function SeccionCuenta({
   }
 
   const tono =
-    cuenta.estado === 'ACTIVA' ? 'exito' : cuenta.estado === 'DESACTIVADA' ? 'peligro' : 'neutro'
+    cuenta.estado === 'ACTIVA' ? 'success' : cuenta.estado === 'DESACTIVADA' ? 'destructive' : 'secondary'
 
   return (
     <section aria-labelledby="titulo-cuenta" className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 id="titulo-cuenta" className="font-semibold text-primary">
+        <h3 id="titulo-cuenta" className="font-semibold">
           Cuenta de la app
         </h3>
-        <ChipEstado tono={tono}>{TEXTO_ESTADO[cuenta.estado]}</ChipEstado>
+        <Badge variant={tono}>{TEXTO_ESTADO[cuenta.estado]}</Badge>
       </div>
       {cuenta.estado === 'SIN_CUENTA' && !cliente.correo && (
         <p className="text-sm text-muted-foreground">
@@ -263,7 +263,7 @@ function SeccionVehiculos({
 
   return (
     <section aria-labelledby="titulo-vehiculos" className="flex flex-col gap-3">
-      <h3 id="titulo-vehiculos" className="font-semibold text-primary">
+      <h3 id="titulo-vehiculos" className="font-semibold">
         Vehículos
       </h3>
       {cliente.vehiculos.length === 0 ? (
