@@ -70,7 +70,7 @@ Las historias de usuario, su prioridad y el sprint de cada una se gestionan en e
 
 El consumo de la API usa `fetch` con un cliente propio (`src/api/cliente.ts`) que agrega el token de la sesión. La sesión se guarda en `sessionStorage`: sobrevive a recargar la página y se borra al cerrar la pestaña.
 
-La interfaz usa **shadcn/ui sin personalizaciones de marca**, igual que el ERP, con el preset `b1au7YYRG` (estilo `rhea`, tema `blue`, Noto Sans). Los tokens están en `src/index.css`; lo único agregado son `--success` y `--warning` para los estados (variantes `success` y `warning` de `Badge` y `Alert`). Los componentes se agregan con `npx shadcn@latest add <componente>`; los de `src/components/ui/` son los mismos que usa el ERP. El paquete `shadcn` es dependencia de desarrollo porque `src/index.css` importa `shadcn/tailwind.css`.
+La interfaz usa **shadcn/ui con un solo color de marca**, igual que el ERP, con el preset `b1au7YYRG` (estilo `rhea`, tema `blue`, Noto Sans). Los tokens están en `src/index.css`; lo único propio es el color principal, Azul Agencia `#1D3557` (`--primary` y `--sidebar-primary`), y `--success` y `--warning` para los estados (variantes `success` y `warning` de `Badge` y `Alert`). Los componentes se agregan con `npx shadcn@latest add <componente>`; los de `src/components/ui/` son los mismos que usa el ERP. El paquete `shadcn` es dependencia de desarrollo porque `src/index.css` importa `shadcn/tailwind.css`.
 
 Todas las pantallas usan componentes de shadcn/ui.
 
