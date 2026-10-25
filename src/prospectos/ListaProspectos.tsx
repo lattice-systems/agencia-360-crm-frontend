@@ -15,8 +15,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -33,8 +35,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Toggle } from '@/components/ui/toggle'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { cn } from '@/lib/utils'
 import { deLaPagina } from '@/lib/paginacion'
 import type { UsuarioApi } from '../api/acceso.ts'
 import { useConsulta, useMensajeDeError } from '../api/useConsulta.ts'
@@ -58,6 +60,7 @@ import { DialogoHistorial } from './DialogoHistorial.tsx'
 import { DialogoReasignar } from './DialogoReasignar.tsx'
 import { DialogoReasignarVarios } from './DialogoReasignarVarios.tsx'
 import { DialogoSolicitarCierre } from './DialogoSolicitarCierre.tsx'
+import { ResumenProspectos } from './ResumenProspectos.tsx'
 import { EtapaChip } from './EtapaChip.tsx'
 import { formatearFecha, formatearFechaCorta, formatearTelefono, soloDigitos } from './formato.ts'
 import { ETAPAS, NOMBRES_ETAPA, NOMBRES_MOTIVO, type Etapa, type Prospecto } from './tipos.ts'
@@ -312,20 +315,19 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
         <TablaCargando />
       ) : (
         <>
+          {!finalizados && <ResumenProspectos prospectos={datos ?? []} />}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
               <div className="flex flex-1 flex-col gap-2">
                 <Label htmlFor="buscar-prospecto">Buscar prospecto</Label>
-                <div className="relative">
-                  <Search
-                    aria-hidden="true"
-                    className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Search aria-hidden="true" />
+                  </InputGroupAddon>
+                  <InputGroupInput
                     id="buscar-prospecto"
                     type="search"
                     placeholder="Nombre, teléfono o correo"
-                    className="pl-9"
                     value={busqueda}
                     onChange={(e) => {
                       setBusqueda(e.target.value)
@@ -333,7 +335,7 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
                       limpiarSeleccion()
                     }}
                   />
-                </div>
+                </InputGroup>
               </div>
               {filtroDeVendedor}
             </div>
@@ -354,16 +356,16 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
                     </ChipFiltro>
                   ))}
                 </div>
-                <label className="flex min-h-9 cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
-                  <input
-                    type="checkbox"
-                    className="size-4 cursor-pointer rounded accent-primary"
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id={`cerrados-${lista}`}
                     checked={mostrarCerrados}
-                    onChange={(e) => cambiarMostrarCerrados(e.target.checked)}
+                    onCheckedChange={(marcado) => cambiarMostrarCerrados(marcado === true)}
                   />
-                  Mostrar cerrados
-                  <span className="tabular-nums">({cerrados})</span>
-                </label>
+                  <Label htmlFor={`cerrados-${lista}`} className="font-normal text-muted-foreground">
+                    Mostrar cerrados <span className="tabular-nums">({cerrados})</span>
+                  </Label>
+                </div>
               </div>
             )}
 
@@ -529,20 +531,9 @@ function ChipFiltro({
   children: ReactNode
 }) {
   return (
-    <button
-      type="button"
-      aria-pressed={activo}
-      onClick={onClick}
-      className={cn(
-        'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors',
-        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
-        activo
-          ? 'bg-accent text-primary ring-1 ring-primary/20'
-          : 'bg-card text-muted-foreground ring-1 ring-border hover:text-foreground',
-      )}
-    >
+    <Toggle variant="outline" size="sm" pressed={activo} onPressedChange={onClick}>
       {children}
-    </button>
+    </Toggle>
   )
 }
 
@@ -572,12 +563,11 @@ function CasillaSeleccion({
   className?: string
 }) {
   return (
-    <input
-      type="checkbox"
+    <Checkbox
       aria-label={etiqueta}
-      className={cn('size-4 cursor-pointer accent-primary', className)}
+      className={className}
       checked={marcada}
-      onChange={(e) => onCambiar(e.target.checked)}
+      onCheckedChange={(marcado) => onCambiar(marcado === true)}
     />
   )
 }
@@ -625,9 +615,9 @@ function Renglones({
 
   if (!movil) {
     return (
-      <Card className="py-0 md:py-0">
+      <div className="overflow-hidden rounded-lg border">
         <Table aria-label="Prospectos">
-          <TableHeader>
+          <TableHeader className="bg-muted">
             <TableRow>
               {seleccion && (
                 <TableHead className="w-10">
@@ -686,7 +676,7 @@ function Renglones({
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </div>
     )
   }
 

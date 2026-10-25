@@ -1,7 +1,10 @@
+import type { CSSProperties } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
+import { Separator } from '@/components/ui/separator'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -11,7 +14,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarSeparator,
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
@@ -21,10 +23,10 @@ import { GRUPOS, seccionesPara } from '../navegacion/secciones.ts'
 import { useSesion } from '../sesion/useSesion.ts'
 
 /**
- * Estructura de la aplicación, igual que en el ERP (CRM-UX-2): menú lateral
- * izquierdo con las secciones del rol y barra superior con el control para
- * plegarlo, las migas de pan y el menú de perfil. En celulares el menú se abre
- * como Sheet desde la izquierda.
+ * Estructura de la aplicación, igual que en el ERP (CRM-UX-2), con la forma
+ * del bloque dashboard-01 de shadcn: menú lateral inset que se pliega a
+ * íconos, con el perfil al pie, y barra superior con el control para plegarlo
+ * y las migas de pan. En celulares el menú se abre como Sheet.
  */
 export function Layout() {
   const { sesion } = useSesion()
@@ -33,17 +35,22 @@ export function Layout() {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      style={
+        {
+          '--sidebar-width': 'calc(var(--spacing) * 64)',
+          '--header-height': 'calc(var(--spacing) * 14)',
+        } as CSSProperties
+      }
+    >
       <MenuLateral />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 md:px-6">
+        <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b px-4 lg:px-6">
           <SidebarTrigger className="-ml-1" aria-label="Mostrar u ocultar el menú" />
+          <Separator orientation="vertical" className="mx-2 data-vertical:h-4 data-vertical:self-center" />
           <MigasDePan />
-          <div className="ml-auto shrink-0">
-            <MenuPerfil />
-          </div>
         </header>
-        <div className="mx-auto w-full max-w-[960px] flex-1 p-4 md:p-6">
+        <div className="@container/main mx-auto flex w-full max-w-6xl flex-1 flex-col p-4 lg:p-6">
           <Outlet />
         </div>
       </SidebarInset>
@@ -61,18 +68,22 @@ function MenuLateral() {
   const secciones = seccionesPara(sesion.rol)
 
   return (
-    <Sidebar>
+    <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
-        <Link
-          to="/"
-          onClick={() => setOpenMobile(false)}
-          aria-label="Agencia360, ir a Inicio"
-          className="w-fit rounded-md p-2"
-        >
-          <img src="/agencia360-logo.svg" alt="" className="h-auto w-32" />
-        </Link>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link to="/" onClick={() => setOpenMobile(false)} aria-label="Agencia360, ir a Inicio">
+                <img src="/agencia360-icono.svg" alt="" className="size-8 shrink-0" />
+                <div className="grid flex-1 text-left leading-tight">
+                  <span className="truncate font-semibold">Agencia360</span>
+                  <span className="truncate text-xs text-muted-foreground">CRM CareCar</span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
-      <SidebarSeparator />
       <SidebarContent>
         <nav aria-label="Principal">
           {GRUPOS.map((grupo) => {
@@ -91,7 +102,7 @@ function MenuLateral() {
                       const Icono = seccion.icono
                       return (
                         <SidebarMenuItem key={seccion.ruta}>
-                          <SidebarMenuButton asChild isActive={activa}>
+                          <SidebarMenuButton asChild isActive={activa} tooltip={seccion.titulo}>
                             <Link
                               to={seccion.ruta}
                               aria-current={activa ? 'page' : undefined}
@@ -111,6 +122,9 @@ function MenuLateral() {
           })}
         </nav>
       </SidebarContent>
+      <SidebarFooter>
+        <MenuPerfil />
+      </SidebarFooter>
     </Sidebar>
   )
 }
