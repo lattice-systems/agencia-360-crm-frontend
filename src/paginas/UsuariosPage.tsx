@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Ellipsis, Info, Plus, Search, UserCog, Users } from 'lucide-react'
+import { Ellipsis, Info, Plus, Search, UserCheck, UserCog, Users, UserX } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import {
   Select,
   SelectContent,
@@ -55,6 +55,7 @@ import { useConsulta, useMensajeDeError } from '../api/useConsulta.ts'
 import { CampoContrasena } from '../componentes/CampoContrasena.tsx'
 import { Badge } from '@/components/ui/badge'
 import { EncabezadoPagina } from '../componentes/EncabezadoPagina.tsx'
+import { TarjetasResumen } from '../componentes/TarjetasResumen.tsx'
 import {
   Empty,
   EmptyDescription,
@@ -151,29 +152,48 @@ export function UsuariosPage() {
         <TablaCargando />
       ) : (
         <>
+          <TarjetasResumen
+            titulo="Resumen de usuarios"
+            indicadores={[
+              { etiqueta: 'Usuarios', valor: usuarios.length, icono: Users },
+              {
+                etiqueta: 'Activos',
+                valor: usuarios.filter((u) => u.activo).length,
+                icono: UserCheck,
+              },
+              {
+                etiqueta: 'Inactivos',
+                valor: usuarios.filter((u) => !u.activo).length,
+                icono: UserX,
+              },
+              {
+                etiqueta: 'Vendedores',
+                valor: usuarios.filter((u) => u.rol === 'VENTAS').length,
+                icono: UserCog,
+              },
+            ]}
+          />
           <div className="grid gap-4 md:grid-cols-[1fr_16rem]">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="buscar-usuario">Buscar usuario</Label>
-              <div className="relative">
-                <Search
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
+            <Field>
+              <FieldLabel htmlFor="buscar-usuario">Buscar usuario</FieldLabel>
+              <InputGroup>
+                <InputGroupAddon>
+                  <Search aria-hidden="true" />
+                </InputGroupAddon>
+                <InputGroupInput
                   id="buscar-usuario"
                   type="search"
                   placeholder="Nombre o usuario"
-                  className="pl-9"
                   value={busqueda}
                   onChange={(e) => {
                     setBusqueda(e.target.value)
                     setPagina(1)
                   }}
                 />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="filtro-rol">Rol</Label>
+              </InputGroup>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="filtro-rol">Rol</FieldLabel>
               <Select
                 value={rol}
                 onValueChange={(valor) => {
@@ -193,7 +213,7 @@ export function UsuariosPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
 
           {filtrados.length === 0 ? (
@@ -273,9 +293,9 @@ function ListaUsuarios({ usuarios, propio, onCambiarRol }: PropsLista) {
 
   if (!movil) {
     return (
-      <Card className="py-0 md:py-0">
+      <div className="overflow-hidden rounded-lg border">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted">
             <TableRow>
               <TableHead>Persona / usuario</TableHead>
               <TableHead>Rol</TableHead>
@@ -299,7 +319,7 @@ function ListaUsuarios({ usuarios, propio, onCambiarRol }: PropsLista) {
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </div>
     )
   }
 
@@ -598,8 +618,8 @@ function DialogoCambiarRol({
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="cambiar-rol">Nuevo rol</Label>
+          <Field>
+            <FieldLabel htmlFor="cambiar-rol">Nuevo rol</FieldLabel>
             <Select value={nuevoRol} onValueChange={(valor) => setNuevoRol(valor as Rol)}>
               <SelectTrigger id="cambiar-rol" className="w-full">
                 <SelectValue />
@@ -612,7 +632,7 @@ function DialogoCambiarRol({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
           <p className="text-sm text-muted-foreground">
             Los permisos cambian en cuanto la persona vuelva a iniciar sesión.
           </p>
