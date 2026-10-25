@@ -1,5 +1,13 @@
-import { FieldError, FieldLegend, FieldSet } from '@/components/ui/field'
-import { cn } from '@/lib/utils'
+import {
+  Field,
+  FieldContent,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  FieldTitle,
+} from '@/components/ui/field'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { MOTIVOS_CIERRE, NOMBRES_MOTIVO, type MotivoCierre } from './tipos.ts'
 
 interface Props {
@@ -16,45 +24,33 @@ interface Props {
  */
 export function SelectorMotivoCierre({ id, valor, onCambiar, error }: Props) {
   return (
-    <FieldSet data-invalid={!!error || undefined} className="gap-0">
+    <FieldSet data-invalid={!!error || undefined}>
       <FieldLegend id={`${id}-titulo`} variant="label">
         Motivo de cierre
       </FieldLegend>
-      <div
-        role="radiogroup"
+      <RadioGroup
         aria-labelledby={`${id}-titulo`}
         aria-invalid={!!error || undefined}
         aria-describedby={error ? `${id}-error` : undefined}
-        className="flex flex-col gap-2"
+        value={valor ?? ''}
+        onValueChange={(motivo) => onCambiar(motivo as MotivoCierre)}
       >
-        {MOTIVOS_CIERRE.map((motivo) => {
-          const elegido = valor === motivo
-          return (
-            <label
-              key={motivo}
-              className={cn(
-                'flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-sm transition-colors',
-                'has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50',
-                elegido
-                  ? 'border-primary bg-accent font-medium text-primary'
-                  : 'border-input hover:bg-muted',
-                error && !elegido && 'border-destructive/60',
-              )}
-            >
-              <input
-                type="radio"
-                name={`${id}-motivo`}
+        {MOTIVOS_CIERRE.map((motivo) => (
+          <FieldLabel key={motivo} htmlFor={`${id}-${motivo}`}>
+            <Field orientation="horizontal" data-invalid={!!error || undefined}>
+              <RadioGroupItem
+                id={`${id}-${motivo}`}
                 value={motivo}
-                checked={elegido}
-                onChange={() => onCambiar(motivo)}
-                className="size-4 accent-primary"
+                aria-invalid={!!error || undefined}
               />
-              {NOMBRES_MOTIVO[motivo]}
-            </label>
-          )
-        })}
-      </div>
-      <FieldError id={`${id}-error`} className="mt-2" errors={error ? [{ message: error }] : []} />
+              <FieldContent>
+                <FieldTitle>{NOMBRES_MOTIVO[motivo]}</FieldTitle>
+              </FieldContent>
+            </Field>
+          </FieldLabel>
+        ))}
+      </RadioGroup>
+      <FieldError id={`${id}-error`} errors={error ? [{ message: error }] : []} />
     </FieldSet>
   )
 }

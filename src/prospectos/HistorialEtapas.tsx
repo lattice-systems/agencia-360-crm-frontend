@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useConsulta } from '../api/useConsulta.ts'
 import { historialDe } from './api.ts'
@@ -25,7 +26,9 @@ export function HistorialEtapas({ prospectoId }: { prospectoId: number }) {
           <Skeleton className="h-4 w-2/3" />
         </div>
       ) : error ? (
-        <p className="text-sm text-destructive">No se pudo cargar el historial.</p>
+        <Alert variant="destructive">
+          <AlertDescription>No se pudo cargar el historial.</AlertDescription>
+        </Alert>
       ) : (
         <ol className="flex flex-col">
           {(datos ?? []).map((movimiento, i, lista) => (

@@ -16,10 +16,17 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldTitle,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
-import { Label } from '@/components/ui/label'
+import { Item, ItemActions, ItemContent, ItemTitle } from '@/components/ui/item'
 import {
   Select,
   SelectContent,
@@ -249,8 +256,8 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
     ) : undefined
 
   const filtroDeVendedor = vendedoresConProspectos.length > 1 && (
-    <div className="flex flex-col gap-2 sm:w-64">
-      <Label htmlFor={`vendedor-${lista}`}>Vendedor</Label>
+    <Field className="sm:w-64">
+      <FieldLabel htmlFor={`vendedor-${lista}`}>Vendedor</FieldLabel>
       <Select
         value={vendedorElegido}
         onValueChange={(valor) => {
@@ -271,7 +278,7 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </Field>
   )
 
   const total = prospectos.length
@@ -318,8 +325,8 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
           {!finalizados && <ResumenProspectos prospectos={datos ?? []} />}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <div className="flex flex-1 flex-col gap-2">
-                <Label htmlFor="buscar-prospecto">Buscar prospecto</Label>
+              <Field className="flex-1">
+                <FieldLabel htmlFor="buscar-prospecto">Buscar prospecto</FieldLabel>
                 <InputGroup>
                   <InputGroupAddon>
                     <Search aria-hidden="true" />
@@ -336,7 +343,7 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
                     }}
                   />
                 </InputGroup>
-              </div>
+              </Field>
               {filtroDeVendedor}
             </div>
 
@@ -356,16 +363,16 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
                     </ChipFiltro>
                   ))}
                 </div>
-                <div className="flex items-center gap-2">
+                <Field orientation="horizontal" className="w-auto">
                   <Checkbox
                     id={`cerrados-${lista}`}
                     checked={mostrarCerrados}
                     onCheckedChange={(marcado) => cambiarMostrarCerrados(marcado === true)}
                   />
-                  <Label htmlFor={`cerrados-${lista}`} className="font-normal text-muted-foreground">
+                  <FieldLabel htmlFor={`cerrados-${lista}`} className="font-normal">
                     Mostrar cerrados <span className="tabular-nums">({cerrados})</span>
-                  </Label>
-                </div>
+                  </FieldLabel>
+                </Field>
               </div>
             )}
 
@@ -414,26 +421,24 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
           ) : (
             <>
               {puedeSeleccionar && seleccionados.length > 0 && (
-                <div
-                  role="region"
-                  aria-label="Prospectos seleccionados"
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-accent px-4 py-3"
-                >
-                  <p className="text-sm font-medium">
-                    {seleccionados.length === 1
-                      ? '1 prospecto seleccionado'
-                      : `${seleccionados.length} prospectos seleccionados`}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
+                <Item variant="muted" role="region" aria-label="Prospectos seleccionados">
+                  <ItemContent>
+                    <ItemTitle>
+                      {seleccionados.length === 1
+                        ? '1 prospecto seleccionado'
+                        : `${seleccionados.length} prospectos seleccionados`}
+                    </ItemTitle>
+                  </ItemContent>
+                  <ItemActions className="flex-wrap">
                     <Button variant="ghost" onClick={limpiarSeleccion}>
                       Quitar selección
                     </Button>
                     <Button onClick={() => setReasignandoVarios(seleccionados)}>
-                      <UserRoundPen aria-hidden="true" />
+                      <UserRoundPen aria-hidden="true" data-icon="inline-start" />
                       Reasignar seleccionados
                     </Button>
-                  </div>
-                </div>
+                  </ItemActions>
+                </Item>
               )}
               <Renglones
                 prospectos={deLaPagina(filtrados, pagina, POR_PAGINA)}
@@ -809,28 +814,27 @@ function DialogoFinalizar({
             finalizado ya no cambia de etapa.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <label className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm">
-          <input
-            type="checkbox"
-            className="mt-0.5 size-4 cursor-pointer accent-primary"
-            checked={sinApp}
-            onChange={(e) => setSinApp(e.target.checked)}
-            aria-labelledby="sin-app-titulo"
-            aria-describedby="sin-app-ayuda"
-          />
-          <span className="flex flex-col gap-1">
-            <span id="sin-app-titulo" className="font-medium">
-              El cliente no quiere la app CareCar
-            </span>
-            <span id="sin-app-ayuda" className="text-muted-foreground">
-              {sinApp
-                ? 'No se le creará cuenta en la app.'
-                : prospecto?.correo
-                  ? `Su cuenta de la app se creará con ${prospecto.correo}.`
-                  : 'Para crear su cuenta de la app hace falta su correo.'}
-            </span>
-          </span>
-        </label>
+        <FieldLabel htmlFor="sin-app">
+          <Field orientation="horizontal">
+            <Checkbox
+              id="sin-app"
+              checked={sinApp}
+              onCheckedChange={(marcado) => setSinApp(marcado === true)}
+              aria-labelledby="sin-app-titulo"
+              aria-describedby="sin-app-ayuda"
+            />
+            <FieldContent>
+              <FieldTitle id="sin-app-titulo">El cliente no quiere la app CareCar</FieldTitle>
+              <FieldDescription id="sin-app-ayuda">
+                {sinApp
+                  ? 'No se le creará cuenta en la app.'
+                  : prospecto?.correo
+                    ? `Su cuenta de la app se creará con ${prospecto.correo}.`
+                    : 'Para crear su cuenta de la app hace falta su correo.'}
+              </FieldDescription>
+            </FieldContent>
+          </Field>
+        </FieldLabel>
         {pideCorreo && (
           <Field data-invalid={!!errorCorreo}>
             <FieldLabel htmlFor="correo-cliente">Correo del cliente</FieldLabel>
