@@ -1,106 +1,94 @@
-/*
- * Tema de Agencia360 según la guía de estilos (estilos.pdf, secciones 2 a 5).
- */
-
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "./shadcn.css";
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/jetbrains-mono";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/noto-sans";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 
-  --background: #f5f7fa;
-  --foreground: #1f2933;
-  --card: #ffffff;
-  --card-foreground: #1f2933;
-  --popover: #ffffff;
-  --popover-foreground: #1f2933;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.488 0.243 264.376);
+  --primary-foreground: oklch(0.97 0.014 254.604);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.809 0.105 251.813);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.488 0.243 264.376);
+  --chart-5: oklch(0.424 0.199 265.638);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.546 0.245 262.881);
+  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 
-  --primary: #1d3557;
-  --primary-hover: #142640;
-  --primary-foreground: #ffffff;
-  --secondary: #edf0f4;
-  --secondary-foreground: #1d3557;
-  --muted: #edf0f4;
-  --muted-foreground: #52606d;
-  --accent: #e8edf4;
-  --accent-foreground: #1d3557;
-  --destructive: #b42318;
-
-  --border: #e2e7ee;
-  --input: #cbd2dc;
-  --ring: #1d3557;
-
-  --chart-1: #1d3557;
-  --chart-2: #168f84;
-  --chart-3: #d08a1e;
-  --chart-4: #7fa6d6;
-  --chart-5: #6b7a90;
-
-  /*
-   * Menú lateral izquierdo, igual que en el ERP.
-   * La guía no trae estos tokens; salen de su paleta: fondo Azul Agencia,
-   * sección activa en Azul profundo y acento Turquesa 360 sobre fondo oscuro.
-   */
-  --sidebar: #1d3557;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #2ec4b6;
-  --sidebar-primary-foreground: #1d3557;
-  --sidebar-accent: #142640;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #2c4870;
-  --sidebar-ring: #2ec4b6;
-
-  /* Propios de Agencia360 */
-  --marca-acento: #2ec4b6;
-  --marca-acento-claro: #168f84;
-  --exito: #1b6e3a;
-  --exito-fondo: #eaf5ee;
-  --advertencia: #8a5a00;
-  --advertencia-fondo: #fdf6e3;
-  --peligro-fondo: #fdecea;
+  /* Estados que shadcn no trae (Disponible, Bajo mínimo, Validada…). */
+  --success: oklch(0.448 0.119 151.328);
+  --success-foreground: oklch(0.982 0.018 155.826);
+  --warning: oklch(0.555 0.163 48.998);
+  --warning-foreground: oklch(0.987 0.022 95.277);
 }
 
 .dark {
-  --background: #0f1724;
-  --foreground: #e5e9f0;
-  --card: #172131;
-  --card-foreground: #e5e9f0;
-  --popover: #172131;
-  --popover-foreground: #e5e9f0;
-  --primary: #7fa6d6;
-  --primary-hover: #a3bfe2;
-  --primary-foreground: #0f1724;
-  --secondary: #1f2c3d;
-  --secondary-foreground: #e5e9f0;
-  --muted: #1f2c3d;
-  --muted-foreground: #9aa7b8;
-  --accent: #1f2c3d;
-  --accent-foreground: #e5e9f0;
-  --destructive: #f28b82;
-  --border: #2a3647;
-  --input: #3e4c59;
-  --ring: #7fa6d6;
-  --sidebar: #172131;
-  --sidebar-foreground: #e5e9f0;
-  --sidebar-accent: #1f2c3d;
-  --sidebar-accent-foreground: #e5e9f0;
-  --sidebar-border: #2a3647;
-  --exito: #7cc897;
-  --exito-fondo: #14261b;
-  --advertencia: #e6b450;
-  --advertencia-fondo: #2b2310;
-  --peligro-fondo: #2d1513;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.424 0.199 265.638);
+  --primary-foreground: oklch(0.97 0.014 254.604);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.809 0.105 251.813);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.488 0.243 264.376);
+  --chart-5: oklch(0.424 0.199 265.638);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.623 0.214 259.815);
+  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+
+  --success: oklch(0.792 0.209 151.711);
+  --success-foreground: oklch(0.266 0.065 152.934);
+  --warning: oklch(0.828 0.189 84.429);
+  --warning-foreground: oklch(0.279 0.077 45.635);
 }
 
 @theme inline {
-  --font-sans: "Inter Variable", system-ui, sans-serif;
+  --font-sans: "Noto Sans Variable", sans-serif;
   --font-heading: var(--font-sans);
-  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -109,7 +97,6 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
-  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -134,18 +121,18 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-marca-acento: var(--marca-acento);
-  --color-marca-acento-claro: var(--marca-acento-claro);
-  --color-exito: var(--exito);
-  --color-exito-fondo: var(--exito-fondo);
-  --color-advertencia: var(--advertencia);
-  --color-advertencia-fondo: var(--advertencia-fondo);
-  --color-peligro-fondo: var(--peligro-fondo);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 @layer base {
@@ -153,6 +140,9 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
