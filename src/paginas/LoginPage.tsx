@@ -2,6 +2,7 @@ import { CircleAlert, Clock } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
@@ -10,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { iniciarSesion } from '../api/acceso.ts'
 import { mensajeDeError } from '../api/cliente.ts'
 import { CampoContrasena } from '../componentes/CampoContrasena.tsx'
+import { SelectorTema } from '../componentes/SelectorTema.tsx'
 import { useSesion } from '../sesion/useSesion.ts'
 
 /** Inicio de sesión del CRM (CRM-0.1), con la forma del bloque login-03 de shadcn. */
@@ -61,7 +63,7 @@ export function LoginPage() {
       {/*
        * Foto de un showroom Nissan (Unsplash, licencia libre, sin atribución
        * obligatoria: unsplash.com/photos/RVEdgp-dkYY). El velo oscuro deja
-       * legibles el logo blanco y el aviso de abajo.
+       * legibles el selector de tema y el aviso de abajo.
        */}
       <img
         src="/fondo-login.jpg"
@@ -69,14 +71,27 @@ export function LoginPage() {
         className="absolute inset-0 -z-10 size-full object-cover"
       />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/55" />
+      <SelectorTema className="absolute top-4 right-4" />
       <div className="flex w-full max-w-sm flex-col gap-6">
         <Card>
           <CardHeader className="text-center">
-            <img src="/agencia360-logo.svg" alt="Agencia360" className="mx-auto mb-2 h-auto w-40" />
+            <img
+              src="/agencia360-logo.svg"
+              alt="Agencia360"
+              className="mx-auto h-auto w-40 dark:hidden"
+            />
+            <img
+              src="/agencia360-logo-blanco.svg"
+              alt="Agencia360"
+              className="mx-auto hidden h-auto w-40 dark:block"
+            />
+            <Badge variant="secondary" className="mx-auto mb-2">
+              CRM CareCar
+            </Badge>
             <CardTitle>
               <h1>Iniciar sesión</h1>
             </CardTitle>
-            <CardDescription>Ingresa con el usuario y la contraseña de tu agencia.</CardDescription>
+            <CardDescription>Usa tu usuario de la agencia.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={enviar} noValidate>
@@ -124,7 +139,7 @@ export function LoginPage() {
                     {enviando ? 'Entrando…' : 'Entrar'}
                   </Button>
                   <FieldDescription className="text-center">
-                    Si necesitas acceso, contacta al gerente de marketing de tu agencia.
+                    ¿Sin acceso? Pídelo a tu gerente.
                   </FieldDescription>
                 </Field>
               </FieldGroup>

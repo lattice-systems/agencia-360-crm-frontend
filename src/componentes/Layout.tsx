@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/sidebar'
 import { MenuPerfil } from '../navegacion/MenuPerfil.tsx'
 import { MigasDePan } from '../navegacion/MigasDePan.tsx'
+import { SelectorTema } from './SelectorTema.tsx'
 import { GRUPOS, seccionesPara } from '../navegacion/secciones.ts'
 import { useSesion } from '../sesion/useSesion.ts'
 
@@ -49,6 +50,7 @@ export function Layout() {
           <SidebarTrigger className="-ml-1" aria-label="Mostrar u ocultar el menú" />
           <Separator orientation="vertical" className="mx-2 data-vertical:h-4 data-vertical:self-center" />
           <MigasDePan />
+          <SelectorTema className="ml-auto" />
         </header>
         <div className="@container/main mx-auto flex w-full max-w-6xl flex-1 flex-col p-4 lg:p-6">
           <Outlet />
