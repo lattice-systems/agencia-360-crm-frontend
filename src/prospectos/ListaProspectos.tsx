@@ -47,6 +47,7 @@ import { useSesion } from '../sesion/useSesion.ts'
 import { AccionesProspecto, type ManejadoresAcciones } from './AccionesProspecto.tsx'
 import { cambiarEtapa, listarProspectos } from './api.ts'
 import { DialogoCambiarEtapa } from './DialogoCambiarEtapa.tsx'
+import { DialogoDatosFiscales } from './DialogoDatosFiscales.tsx'
 import { DialogoHistorial } from './DialogoHistorial.tsx'
 import { DialogoReasignar } from './DialogoReasignar.tsx'
 import { DialogoReasignarVarios } from './DialogoReasignarVarios.tsx'
@@ -126,6 +127,7 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
   const [solicitando, setSolicitando] = useState<Prospecto | null>(null)
   const [finalizando, setFinalizando] = useState<Prospecto | null>(null)
   const [reasignando, setReasignando] = useState<Prospecto | null>(null)
+  const [capturandoFiscales, setCapturandoFiscales] = useState<Prospecto | null>(null)
   // Reasignación en masa (CRM-UX-1): solo el gerente, en la lista de Prospectos.
   const [seleccion, setSeleccion] = useState<ReadonlySet<number>>(new Set())
   const [reasignandoVarios, setReasignandoVarios] = useState<Prospecto[] | null>(null)
@@ -226,6 +228,7 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
     onSolicitarCierre: setSolicitando,
     onFinalizar: setFinalizando,
     onReasignar: setReasignando,
+    onDatosFiscales: setCapturandoFiscales,
   }
 
   const botonRegistrar =
@@ -446,6 +449,15 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
         }}
       />
       <DialogoHistorial prospecto={consultando} onCerrar={() => setConsultando(null)} />
+      <DialogoDatosFiscales
+        prospecto={capturandoFiscales}
+        onCerrar={() => setCapturandoFiscales(null)}
+        onGuardado={(actualizado) => {
+          reemplazar(actualizado)
+          setCapturandoFiscales(null)
+          toast.success(`Se guardaron los datos fiscales de ${actualizado.nombre}.`)
+        }}
+      />
       <DialogoSolicitarCierre
         prospecto={solicitando}
         onCerrar={() => setSolicitando(null)}

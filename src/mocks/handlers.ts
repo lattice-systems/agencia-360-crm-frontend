@@ -231,6 +231,32 @@ export const handlers = [
     return HttpResponse.json(prospecto)
   }),
 
+  http.put(`${URL_PROSPECTOS}/:id/datos-fiscales`, async ({ params, request }) => {
+    const ruta = `${URL_PROSPECTOS}/${params.id}/datos-fiscales`
+    const actor = actorDe(request)
+    if (actor && !esVendedor(actor)) {
+      return apiError(403, 'Forbidden', 'Solo el vendedor captura los datos fiscales', ruta)
+    }
+    const prospecto = visible(Number(params.id), actor)
+    if (!prospecto) {
+      return apiError(404, 'Not Found', `No existe el prospecto ${params.id}`, ruta)
+    }
+    const fiscales = conDescripcion(await request.json())
+    if (!fiscales) {
+      return apiError(400, 'Bad Request', 'Los datos fiscales no son válidos', ruta)
+    }
+    if (prospecto.etapa !== 'PAGO') {
+      return apiError(
+        409,
+        'Conflict',
+        'Los datos fiscales se capturan mientras el prospecto está en Pago',
+        ruta,
+      )
+    }
+    prospecto.datosFiscales = fiscales
+    return HttpResponse.json(prospecto)
+  }),
+
   http.post(`${URL_PROSPECTOS}/:id/solicitudes-cierre`, async ({ params, request }) => {
     const ruta = `${URL_PROSPECTOS}/${params.id}/solicitudes-cierre`
     const actor = actorDe(request)
