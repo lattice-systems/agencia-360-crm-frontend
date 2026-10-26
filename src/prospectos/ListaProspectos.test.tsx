@@ -42,6 +42,20 @@ async function elegirEnSelect(usuario: Usuario, combo: HTMLElement, opcion: stri
   await usuario.click(await screen.findByRole('option', { name: opcion }))
 }
 
+/** Captura datos fiscales válidos; el nombre ya viene con el del prospecto. */
+async function capturarFiscales(usuario: Usuario, dialogo: HTMLElement) {
+  await usuario.type(within(dialogo).getByLabelText('RFC'), 'loha850101ab1')
+  await usuario.type(
+    within(dialogo).getByLabelText('Domicilio fiscal'),
+    'Blvd. López Mateos 1102, León, Gto.',
+  )
+  await elegirEnSelect(
+    usuario,
+    within(dialogo).getByRole('combobox', { name: 'Régimen fiscal' }),
+    '612 · Personas Físicas con Actividades Empresariales y Profesionales',
+  )
+}
+
 describe('Lista de prospectos del vendedor', () => {
   it('muestra sus prospectos con teléfono, etapa y último cambio', async () => {
     abrirVendedor()
@@ -245,6 +259,7 @@ describe('Cambio de etapa', () => {
 
     await elegirEnSelect(usuario, within(dialogo).getByRole('combobox', { name: 'Nueva etapa' }), 'Pago')
     await usuario.type(within(dialogo).getByLabelText('Precio total de la venta (MXN)'), '489900')
+    await capturarFiscales(usuario, dialogo)
     await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar etapa' }))
 
     expect(await screen.findByText('Rosa Díaz pasó a la etapa Pago.')).toBeInTheDocument()
@@ -269,10 +284,52 @@ describe('Cambio de etapa', () => {
 
     await usuario.clear(within(dialogo).getByLabelText('Precio total de la venta (MXN)'))
     await usuario.type(within(dialogo).getByLabelText('Precio total de la venta (MXN)'), '$489,900.50')
+    await capturarFiscales(usuario, dialogo)
     await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar etapa' }))
 
     expect(await screen.findByText('Marta Hernández pasó a la etapa Pago.')).toBeInTheDocument()
-    expect(recibido).toEqual({ etapa: 'PAGO', precioTotal: 489900.5 })
+    expect(recibido).toEqual({
+      etapa: 'PAGO',
+      precioTotal: 489900.5,
+      datosFiscales: {
+        rfc: 'LOHA850101AB1',
+        nombre: 'Marta Hernández',
+        domicilio: 'Blvd. López Mateos 1102, León, Gto.',
+        regimenFiscal: '612',
+      },
+    })
+  })
+
+  it('al pasar a Pago pide los datos fiscales del cliente y valida el RFC', async () => {
+    let recibido: unknown
+    server.use(
+      http.patch(`${URL_PROSPECTOS}/:id/etapa`, async ({ request }) => {
+        recibido = await request.clone().json()
+      }),
+    )
+    const { usuario, dialogo } = await abrirCambio('Pasar Marta Hernández a Pago')
+    expect(within(dialogo).getByLabelText('Nombre completo o razón social')).toHaveValue(
+      'Marta Hernández',
+    )
+    await usuario.type(within(dialogo).getByLabelText('Precio total de la venta (MXN)'), '489900')
+    await usuario.clear(within(dialogo).getByLabelText('Nombre completo o razón social'))
+
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar etapa' }))
+
+    expect(within(dialogo).getByText('Escribe el RFC del cliente.')).toBeInTheDocument()
+    expect(
+      within(dialogo).getByText('Escribe el nombre completo como aparece en su constancia fiscal.'),
+    ).toBeInTheDocument()
+    expect(within(dialogo).getByText('Escribe el domicilio fiscal.')).toBeInTheDocument()
+    expect(within(dialogo).getByText('Elige el régimen fiscal.')).toBeInTheDocument()
+    expect(within(dialogo).getByLabelText('RFC')).toHaveAttribute('aria-invalid', 'true')
+
+    await usuario.type(within(dialogo).getByLabelText('RFC'), 'LOHA851301AB1')
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar etapa' }))
+    expect(
+      within(dialogo).getByText('El RFC no tiene un formato válido, por ejemplo LOHA850101AB1.'),
+    ).toBeInTheDocument()
+    expect(recibido).toBeUndefined()
   })
 
   it('Cerrar llega con Cerrado elegido y exige uno de los tres motivos', async () => {

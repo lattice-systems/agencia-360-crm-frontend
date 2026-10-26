@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { URL_PROSPECTOS } from '../prospectos/api.ts'
+import { esquemaDatosFiscales, REGIMENES_FISCALES } from '../prospectos/datosFiscales.ts'
 import {
   esEtapaInicial,
   estaEnProcesoDeVenta,
@@ -145,13 +146,14 @@ export const handlers = [
   http.patch(`${URL_PROSPECTOS}/:id/etapa`, async ({ params, request }) => {
     const ruta = `${URL_PROSPECTOS}/${params.id}/etapa`
     const actor = actorDe(request)
-    const { etapa, motivoCierre, clienteRechazaApp, correoCliente, precioTotal } =
+    const { etapa, motivoCierre, clienteRechazaApp, correoCliente, precioTotal, datosFiscales } =
       (await request.json()) as {
         etapa?: unknown
         motivoCierre?: unknown
         clienteRechazaApp?: unknown
         correoCliente?: unknown
         precioTotal?: unknown
+        datosFiscales?: unknown
       }
     if (!esEtapa(etapa)) {
       return apiError(400, 'Bad Request', 'Etapa no válida', ruta)
@@ -193,7 +195,16 @@ export const handlers = [
       if (typeof precioTotal !== 'number' || precioTotal <= 0) {
         return apiError(400, 'Bad Request', 'Captura el precio total de la venta', ruta)
       }
+      // Y los datos fiscales del cliente para la factura (ERP-1.3).
+      if (datosFiscales === undefined || datosFiscales === null) {
+        return apiError(400, 'Bad Request', 'Captura los datos fiscales del cliente para la factura', ruta)
+      }
+      const fiscales = conDescripcion(datosFiscales)
+      if (!fiscales) {
+        return apiError(400, 'Bad Request', 'Los datos fiscales no son válidos', ruta)
+      }
       prospecto.precioTotal = precioTotal
+      prospecto.datosFiscales = fiscales
     }
     // Para finalizar hace falta el correo, salvo que el cliente no quiera la app.
     if (etapa === 'FINALIZADO' && clienteRechazaApp !== true) {
@@ -254,3 +265,11 @@ export const handlers = [
     )
   }),
 ]
+
+/** Valida los datos fiscales como el backend y les agrega la descripción del régimen. */
+function conDescripcion(cuerpo: unknown) {
+  const resultado = esquemaDatosFiscales.safeParse(cuerpo)
+  if (!resultado.success) return null
+  const regimen = REGIMENES_FISCALES.find((r) => r.clave === resultado.data.regimenFiscal)
+  return { ...resultado.data, regimenFiscalDescripcion: regimen?.descripcion ?? '' }
+}
