@@ -2,7 +2,6 @@ import { CircleAlert, Clock } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
@@ -72,26 +71,25 @@ export function LoginPage() {
       />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/55" />
       <SelectorTema className="absolute top-4 right-4" />
-      <div className="flex w-full max-w-sm flex-col gap-6">
+      <div className="flex w-full max-w-md flex-col gap-6">
         <Card>
           <CardHeader className="text-center">
             <img
               src="/agencia360-logo.svg"
               alt="Agencia360"
-              className="mx-auto h-auto w-40 dark:hidden"
+              className="mx-auto mb-2 h-auto w-40 dark:hidden"
             />
             <img
               src="/agencia360-logo-blanco.svg"
               alt="Agencia360"
-              className="mx-auto hidden h-auto w-40 dark:block"
+              className="mx-auto mb-2 hidden h-auto w-40 dark:block"
             />
-            <Badge variant="secondary" className="mx-auto mb-2">
-              CRM CareCar
-            </Badge>
             <CardTitle>
               <h1>Iniciar sesión</h1>
             </CardTitle>
-            <CardDescription>Usa tu usuario de la agencia.</CardDescription>
+            <CardDescription>
+              Ingresa al CRM con el usuario y la contraseña de tu agencia.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={enviar} noValidate>
@@ -139,7 +137,7 @@ export function LoginPage() {
                     {enviando ? 'Entrando…' : 'Entrar'}
                   </Button>
                   <FieldDescription className="text-center">
-                    ¿Sin acceso? Pídelo a tu gerente.
+                    Si necesitas acceso, contacta a tu gerente de marketing.
                   </FieldDescription>
                 </Field>
               </FieldGroup>
