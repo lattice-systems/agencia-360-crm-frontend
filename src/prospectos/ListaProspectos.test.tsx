@@ -196,10 +196,11 @@ describe('Botones de acciones según la etapa', () => {
     expect(await botonesDe('Marta Hernández')).toContain('Pasar Marta Hernández a Pago')
   })
 
-  it('en Pago no avanza ni cierra directo: solicita el cierre o ve el historial', async () => {
+  it('en Pago no avanza ni cierra directo: captura los datos fiscales, solicita el cierre o ve el historial', async () => {
     abrirVendedor()
 
     expect(await botonesDe('Luis Herrera')).toEqual([
+      'Capturar los datos fiscales de Luis Herrera',
       'Solicitar cierre de Luis Herrera',
       'Ver historial de Luis Herrera',
     ])
@@ -532,6 +533,85 @@ describe('Pago, Facturación y Entrega', () => {
 
     expect(await screen.findByText('Valeria Díaz quedó finalizado.')).toBeInTheDocument()
     expect(recibido).toEqual({ etapa: 'FINALIZADO', clienteRechazaApp: true })
+  })
+})
+
+describe('Datos fiscales en Pago', () => {
+  it('el vendedor captura los que faltan y el botón deja de pedirlos', async () => {
+    let recibido: unknown
+    server.use(
+      http.put(`${URL_PROSPECTOS}/:id/datos-fiscales`, async ({ request }) => {
+        recibido = await request.clone().json()
+      }),
+    )
+    const usuario = abrirVendedor()
+    await usuario.click(
+      await screen.findByRole('button', { name: 'Capturar los datos fiscales de Luis Herrera' }),
+    )
+    const dialogo = await screen.findByRole('dialog', { name: 'Datos fiscales' })
+    expect(
+      within(dialogo).getByText('Contabilidad no puede validar los pagos hasta que captures estos datos.'),
+    ).toBeInTheDocument()
+
+    await capturarFiscales(usuario, dialogo)
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar datos fiscales' }))
+
+    expect(await screen.findByText('Se guardaron los datos fiscales de Luis Herrera.')).toBeInTheDocument()
+    expect(recibido).toEqual({
+      rfc: 'LOHA850101AB1',
+      nombre: 'Luis Herrera',
+      domicilio: 'Blvd. López Mateos 1102, León, Gto.',
+      regimenFiscal: '612',
+    })
+    expect(await botonesDe('Luis Herrera')).toContain('Corregir los datos fiscales de Luis Herrera')
+  })
+
+  it('al corregir carga los datos que ya tiene', async () => {
+    const usuario = abrirVendedor()
+    await usuario.click(
+      await screen.findByRole('button', { name: 'Capturar los datos fiscales de Luis Herrera' }),
+    )
+    let dialogo = await screen.findByRole('dialog', { name: 'Datos fiscales' })
+    await capturarFiscales(usuario, dialogo)
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar datos fiscales' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+    await usuario.click(
+      await screen.findByRole('button', { name: 'Corregir los datos fiscales de Luis Herrera' }),
+    )
+    dialogo = await screen.findByRole('dialog', { name: 'Datos fiscales' })
+
+    expect(within(dialogo).getByLabelText('RFC')).toHaveValue('LOHA850101AB1')
+    expect(within(dialogo).getByLabelText('Domicilio fiscal')).toHaveValue(
+      'Blvd. López Mateos 1102, León, Gto.',
+    )
+  })
+
+  it('muestra el mensaje del servidor si los rechaza', async () => {
+    server.use(
+      http.put(`${URL_PROSPECTOS}/:id/datos-fiscales`, () =>
+        HttpResponse.json(
+          {
+            status: 409,
+            error: 'Conflict',
+            message: 'Los datos fiscales se capturan mientras el prospecto está en Pago',
+            path: '/',
+          },
+          { status: 409 },
+        ),
+      ),
+    )
+    const usuario = abrirVendedor()
+    await usuario.click(
+      await screen.findByRole('button', { name: 'Capturar los datos fiscales de Luis Herrera' }),
+    )
+    const dialogo = await screen.findByRole('dialog', { name: 'Datos fiscales' })
+    await capturarFiscales(usuario, dialogo)
+    await usuario.click(within(dialogo).getByRole('button', { name: 'Guardar datos fiscales' }))
+
+    expect(
+      await within(dialogo).findByText('Los datos fiscales se capturan mientras el prospecto está en Pago'),
+    ).toBeInTheDocument()
   })
 })
 

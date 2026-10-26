@@ -3,6 +3,7 @@ import {
   CheckCheck,
   Clock,
   Eye,
+  FileText,
   SendHorizontal,
   UserRoundCog,
   XCircle,
@@ -44,6 +45,11 @@ const COLOR_CERRAR =
 const COLOR_SOLICITAR = 'border-input bg-card text-foreground hover:bg-muted'
 const COLOR_PENDIENTE = 'border-transparent bg-muted text-muted-foreground'
 const COLOR_REASIGNAR = 'border-input bg-card text-foreground hover:bg-muted'
+// Datos fiscales: en ámbar si faltan (Contabilidad no puede validar sin ellos),
+// neutro si ya están y solo se pueden corregir.
+const COLOR_FISCALES_FALTAN =
+  'border-advertencia/30 bg-advertencia-fondo text-advertencia hover:bg-advertencia/15'
+const COLOR_FISCALES = 'border-input bg-card text-foreground hover:bg-muted'
 
 export interface ManejadoresAcciones {
   /** Solo el vendedor mueve etapas, finaliza y solicita cierres. */
@@ -55,6 +61,8 @@ export interface ManejadoresAcciones {
   onSolicitarCierre: (p: Prospecto) => void
   onFinalizar: (p: Prospecto) => void
   onReasignar: (p: Prospecto) => void
+  /** En Pago el vendedor captura o corrige los datos fiscales (ERP-1.3). */
+  onDatosFiscales: (p: Prospecto) => void
 }
 
 interface PropsBoton {
@@ -140,8 +148,8 @@ function BotonVer({
  * Acciones de cada renglón según el rol y la etapa (decisiones del PO del 12 de
  * octubre). Siempre en el mismo orden y en columnas fijas, para que alineen de
  * un renglón a otro:
- * 1. Avanzar a la siguiente etapa, o Finalizar en Entrega (o Reasignar, para el
- *    Gerente de marketing).
+ * 1. Avanzar a la siguiente etapa, Datos fiscales en Pago o Finalizar en
+ *    Entrega (o Reasignar, para el Gerente de marketing).
  * 2. Cerrar (primeras etapas) o Solicitar cierre (Pago en adelante).
  * 3. Ver el historial (el ojo).
  * Los dos primeros abren una confirmación; en Pago y Facturación avanza el ERP.
@@ -170,6 +178,22 @@ export function AccionesProspecto({
         etiqueta={`Pasar ${p.nombre} a ${NOMBRES_ETAPA[siguiente]}`}
         texto={NOMBRES_ETAPA[siguiente]}
         onClick={() => acciones.onCambiarEtapa(p, siguiente)}
+      />
+    )
+  } else if (vendedor && p.etapa === 'PAGO') {
+    const faltan = !p.datosFiscales
+    principal = (
+      <BotonAccion
+        color={faltan ? COLOR_FISCALES_FALTAN : COLOR_FISCALES}
+        icono={FileText}
+        tactil={tactil}
+        etiqueta={
+          faltan
+            ? `Capturar los datos fiscales de ${p.nombre}`
+            : `Corregir los datos fiscales de ${p.nombre}`
+        }
+        texto="Fiscales"
+        onClick={() => acciones.onDatosFiscales(p)}
       />
     )
   } else if (vendedor && p.etapa === 'ENTREGA') {
@@ -231,7 +255,7 @@ export function AccionesProspecto({
   }
 
   // El vendedor siempre reserva las dos columnas aunque una esté vacía (por
-  // ejemplo en Pago, sin botón de avanzar), así todas alinean.
+  // ejemplo en Facturación, sin botón de avanzar), así todas alinean.
   const hayColumnas = vendedor || acciones.puedeReasignar
   const columna1 = tactil ? 'min-w-0 flex-1' : 'w-28'
   const columna2 = tactil ? 'min-w-0 flex-1' : 'w-[8.5rem]'
