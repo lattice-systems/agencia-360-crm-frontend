@@ -49,9 +49,24 @@ export function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+    <main className="relative isolate flex min-h-svh flex-col items-center justify-center gap-6 overflow-hidden bg-muted p-6 md:p-10">
+      {/*
+       * Foto de un showroom Nissan (Unsplash, licencia libre, sin atribución
+       * obligatoria: unsplash.com/photos/RVEdgp-dkYY). El velo oscuro deja
+       * legibles el logo blanco y el aviso de abajo.
+       */}
+      <img
+        src="/fondo-login.jpg"
+        alt=""
+        className="absolute inset-0 -z-10 size-full object-cover"
+      />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/55" />
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <img src="/agencia360-logo.svg" alt="Agencia360" className="h-auto w-44 self-center" />
+        <img
+          src="/agencia360-logo-blanco.svg"
+          alt="Agencia360"
+          className="h-auto w-44 self-center"
+        />
         <Card>
           <CardHeader className="text-center">
             <CardTitle>
@@ -104,7 +119,7 @@ export function LoginPage() {
             </form>
           </CardContent>
         </Card>
-        <FieldDescription className="px-6 text-center">
+        <FieldDescription className="px-6 text-center text-white/80">
           Acceso exclusivo para personal autorizado.
         </FieldDescription>
       </div>
