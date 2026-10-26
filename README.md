@@ -65,14 +65,14 @@ Las historias de usuario, su prioridad y el sprint de cada una se gestionan en e
 | shadcn/ui (Radix) + Tailwind CSS 4 | Componentes de interfaz y estilos        |
 | Lucide (`lucide-react`)            | Íconos                                   |
 | react-hook-form + zod              | Formularios y validación                 |
-| Inter y JetBrains Mono             | Fuentes locales (`@fontsource-variable`) |
+| Noto Sans                          | Fuente local (`@fontsource-variable`) |
 | Sonner                             | Avisos de resultado                      |
 
 El consumo de la API usa `fetch` con un cliente propio (`src/api/cliente.ts`) que agrega el token de la sesión. La sesión se guarda en `sessionStorage`: sobrevive a recargar la página y se borra al cerrar la pestaña.
 
-La interfaz sigue la **guía de estilos de Agencia360** (`estilos.pdf`) y los mockups del equipo, igual que el ERP: Azul Agencia `#1D3557` como color principal, turquesa solo como acento, menú lateral izquierdo y componentes de shadcn/ui. Los tokens de color, tipografía y radios están en `src/index.css`. Los componentes se agregan con `npx shadcn@latest add <componente>`; los de `src/components/ui/` son los mismos que usa el ERP.
+La interfaz usa **shadcn/ui con un solo color de marca**, igual que el ERP, con el preset `b1au7YYRG` (estilo `rhea`, tema `blue`, Noto Sans). Los tokens están en `src/index.css`; lo único propio es el color principal, Azul Agencia `#1D3557` (`--primary` y `--sidebar-primary`), y `--success` y `--warning` para los estados (variantes `success` y `warning` de `Badge` y `Alert`). Los componentes se agregan con `npx shadcn@latest add <componente>`; los de `src/components/ui/` son los mismos que usa el ERP. El paquete `shadcn` es dependencia de desarrollo porque `src/index.css` importa `shadcn/tailwind.css`.
 
-El login, el menú lateral, la administración de usuarios y el diálogo para reasignar prospectos ya usan shadcn/ui. La lista y el registro de prospectos todavía usan su CSS anterior (`src/estilos-anteriores.css`, aislado dentro de `.estilo-anterior`); al migrarlas se borra ese archivo.
+Todas las pantallas usan componentes de shadcn/ui.
 
 ---
 
@@ -185,8 +185,7 @@ agencia-360-crm-frontend/
 │   ├── App.tsx          # Rutas de la aplicación
 │   ├── App.test.tsx     # Pruebas de navegación de la aplicación
 │   ├── main.tsx         # Punto de entrada de la aplicación
-│   ├── index.css        # Tema: tokens de la guía de estilos y Tailwind
-│   └── estilos-anteriores.css  # CSS de la lista y el registro de prospectos, hasta migrarlos
+│   ├── index.css        # Tema: tokens del preset de shadcn y Tailwind
 ├── components.json      # Configuración de shadcn/ui
 ├── index.html           # HTML base
 ├── eslint.config.js     # Configuración de ESLint

@@ -89,9 +89,9 @@ export function DialogoDatosFiscales({ prospecto, onCerrar, onGuardado }: Props)
     <Dialog open={prospecto !== null} onOpenChange={(abrir) => !abrir && cerrar()}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">Datos fiscales</DialogTitle>
+          <DialogTitle>Datos fiscales</DialogTitle>
           <DialogDescription>
-            <span className="block text-base font-semibold text-primary">{prospecto?.nombre}</span>
+            <span className="block font-medium text-foreground">{prospecto?.nombre}</span>
             Se pueden corregir mientras el prospecto está en Pago.
           </DialogDescription>
         </DialogHeader>

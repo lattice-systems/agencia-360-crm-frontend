@@ -15,9 +15,18 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldTitle,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { Item, ItemActions, ItemContent, ItemTitle } from '@/components/ui/item'
 import {
   Select,
   SelectContent,
@@ -33,13 +42,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Toggle } from '@/components/ui/toggle'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { cn } from '@/lib/utils'
 import { deLaPagina } from '@/lib/paginacion'
 import type { UsuarioApi } from '../api/acceso.ts'
 import { useConsulta, useMensajeDeError } from '../api/useConsulta.ts'
 import { EncabezadoPagina } from '../componentes/EncabezadoPagina.tsx'
-import { EstadoVacio } from '../componentes/EstadoVacio.tsx'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { Paginacion } from '../componentes/Paginacion.tsx'
 import { TablaCargando } from '../componentes/TablaCargando.tsx'
 import { RUTA_REGISTRAR } from '../navegacion/secciones.ts'
@@ -52,6 +68,7 @@ import { DialogoHistorial } from './DialogoHistorial.tsx'
 import { DialogoReasignar } from './DialogoReasignar.tsx'
 import { DialogoReasignarVarios } from './DialogoReasignarVarios.tsx'
 import { DialogoSolicitarCierre } from './DialogoSolicitarCierre.tsx'
+import { ResumenProspectos } from './ResumenProspectos.tsx'
 import { EtapaChip } from './EtapaChip.tsx'
 import { formatearFecha, formatearFechaCorta, formatearTelefono, soloDigitos } from './formato.ts'
 import { ETAPAS, NOMBRES_ETAPA, NOMBRES_MOTIVO, type Etapa, type Prospecto } from './tipos.ts'
@@ -242,8 +259,8 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
     ) : undefined
 
   const filtroDeVendedor = vendedoresConProspectos.length > 1 && (
-    <div className="flex flex-col gap-2 sm:w-64">
-      <Label htmlFor={`vendedor-${lista}`}>Vendedor</Label>
+    <Field className="sm:w-64">
+      <FieldLabel htmlFor={`vendedor-${lista}`}>Vendedor</FieldLabel>
       <Select
         value={vendedorElegido}
         onValueChange={(valor) => {
@@ -264,7 +281,7 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </Field>
   )
 
   const total = prospectos.length
@@ -308,20 +325,19 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
         <TablaCargando />
       ) : (
         <>
+          {!finalizados && <ResumenProspectos prospectos={datos ?? []} />}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <div className="flex flex-1 flex-col gap-2">
-                <Label htmlFor="buscar-prospecto">Buscar prospecto</Label>
-                <div className="relative">
-                  <Search
-                    aria-hidden="true"
-                    className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
+              <Field className="flex-1">
+                <FieldLabel htmlFor="buscar-prospecto">Buscar prospecto</FieldLabel>
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Search aria-hidden="true" />
+                  </InputGroupAddon>
+                  <InputGroupInput
                     id="buscar-prospecto"
                     type="search"
                     placeholder="Nombre, teléfono o correo"
-                    className="pl-9"
                     value={busqueda}
                     onChange={(e) => {
                       setBusqueda(e.target.value)
@@ -329,8 +345,8 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
                       limpiarSeleccion()
                     }}
                   />
-                </div>
-              </div>
+                </InputGroup>
+              </Field>
               {filtroDeVendedor}
             </div>
 
@@ -350,16 +366,16 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
                     </ChipFiltro>
                   ))}
                 </div>
-                <label className="flex min-h-9 cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
-                  <input
-                    type="checkbox"
-                    className="size-4 cursor-pointer rounded accent-primary"
+                <Field orientation="horizontal" className="w-auto">
+                  <Checkbox
+                    id={`cerrados-${lista}`}
                     checked={mostrarCerrados}
-                    onChange={(e) => cambiarMostrarCerrados(e.target.checked)}
+                    onCheckedChange={(marcado) => cambiarMostrarCerrados(marcado === true)}
                   />
-                  Mostrar cerrados
-                  <span className="tabular-nums">({cerrados})</span>
-                </label>
+                  <FieldLabel htmlFor={`cerrados-${lista}`} className="font-normal">
+                    Mostrar cerrados <span className="tabular-nums">({cerrados})</span>
+                  </FieldLabel>
+                </Field>
               </div>
             )}
 
@@ -369,53 +385,63 @@ function ListaProspectos({ vendedores, puedeCambiarEtapa = true, modo = 'activos
           {filtrados.length === 0 ? (
             <Card>
               {total === 0 && finalizados ? (
-                <EstadoVacio
-                  icono={BadgeCheck}
-                  titulo="Aún no hay prospectos finalizados"
-                  descripcion="Aquí aparecen cuando el vendedor finaliza la entrega."
-                />
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><BadgeCheck /></EmptyMedia>
+                    <EmptyTitle>Aún no hay prospectos finalizados</EmptyTitle>
+                    <EmptyDescription>
+                      Aquí aparecen cuando el vendedor finaliza la entrega.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               ) : total === 0 ? (
-                <EstadoVacio
-                  icono={Users}
-                  titulo={esVendedor ? 'Aún no tienes prospectos' : 'Aún no hay prospectos'}
-                  descripcion={
-                    esVendedor
-                      ? 'Registra el primer contacto para comenzar.'
-                      : 'Aquí aparecerán los prospectos que registren los vendedores.'
-                  }
-                  accion={botonRegistrar}
-                />
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><Users /></EmptyMedia>
+                    <EmptyTitle>
+                      {esVendedor ? 'Aún no tienes prospectos' : 'Aún no hay prospectos'}
+                    </EmptyTitle>
+                    <EmptyDescription>
+                      {esVendedor
+                        ? 'Registra el primer contacto para comenzar.'
+                        : 'Aquí aparecerán los prospectos que registren los vendedores.'}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  {botonRegistrar && <EmptyContent>{botonRegistrar}</EmptyContent>}
+                </Empty>
               ) : (
-                <EstadoVacio
-                  icono={Search}
-                  titulo="Ningún prospecto coincide"
-                  descripcion="Prueba con otro nombre, teléfono, correo o etapa."
-                />
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><Search /></EmptyMedia>
+                    <EmptyTitle>Ningún prospecto coincide</EmptyTitle>
+                    <EmptyDescription>
+                      Prueba con otro nombre, teléfono, correo o etapa.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               )}
             </Card>
           ) : (
             <>
               {puedeSeleccionar && seleccionados.length > 0 && (
-                <div
-                  role="region"
-                  aria-label="Prospectos seleccionados"
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-accent px-4 py-3"
-                >
-                  <p className="text-sm font-medium text-primary">
-                    {seleccionados.length === 1
-                      ? '1 prospecto seleccionado'
-                      : `${seleccionados.length} prospectos seleccionados`}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
+                <Item variant="muted" role="region" aria-label="Prospectos seleccionados">
+                  <ItemContent>
+                    <ItemTitle>
+                      {seleccionados.length === 1
+                        ? '1 prospecto seleccionado'
+                        : `${seleccionados.length} prospectos seleccionados`}
+                    </ItemTitle>
+                  </ItemContent>
+                  <ItemActions className="flex-wrap">
                     <Button variant="ghost" onClick={limpiarSeleccion}>
                       Quitar selección
                     </Button>
                     <Button onClick={() => setReasignandoVarios(seleccionados)}>
-                      <UserRoundPen aria-hidden="true" />
+                      <UserRoundPen aria-hidden="true" data-icon="inline-start" />
                       Reasignar seleccionados
                     </Button>
-                  </div>
-                </div>
+                  </ItemActions>
+                </Item>
               )}
               <Renglones
                 prospectos={deLaPagina(filtrados, pagina, POR_PAGINA)}
@@ -522,20 +548,9 @@ function ChipFiltro({
   children: ReactNode
 }) {
   return (
-    <button
-      type="button"
-      aria-pressed={activo}
-      onClick={onClick}
-      className={cn(
-        'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors',
-        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
-        activo
-          ? 'bg-accent text-primary ring-1 ring-primary/20'
-          : 'bg-card text-muted-foreground ring-1 ring-border hover:text-foreground',
-      )}
-    >
+    <Toggle variant="outline" size="sm" pressed={activo} onPressedChange={onClick}>
       {children}
-    </button>
+    </Toggle>
   )
 }
 
@@ -565,12 +580,11 @@ function CasillaSeleccion({
   className?: string
 }) {
   return (
-    <input
-      type="checkbox"
+    <Checkbox
       aria-label={etiqueta}
-      className={cn('size-4 cursor-pointer accent-primary', className)}
+      className={className}
       checked={marcada}
-      onChange={(e) => onCambiar(e.target.checked)}
+      onCheckedChange={(marcado) => onCambiar(marcado === true)}
     />
   )
 }
@@ -618,9 +632,9 @@ function Renglones({
 
   if (!movil) {
     return (
-      <Card className="py-0 md:py-0">
+      <div className="overflow-hidden rounded-lg border">
         <Table aria-label="Prospectos">
-          <TableHeader>
+          <TableHeader className="bg-muted">
             <TableRow>
               {seleccion && (
                 <TableHead className="w-10">
@@ -679,7 +693,7 @@ function Renglones({
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </div>
     )
   }
 
@@ -698,7 +712,7 @@ function Renglones({
                 />
               )}
               <div className="min-w-0 flex-1">
-                <p className="nombre font-semibold text-primary">{p.nombre}</p>
+                <p className="nombre font-semibold">{p.nombre}</p>
                 <p className="text-sm text-muted-foreground tabular-nums">
                   {formatearTelefono(p.telefono) || p.correo}
                 </p>
@@ -806,34 +820,33 @@ function DialogoFinalizar({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-primary">¿Finalizar el prospecto?</AlertDialogTitle>
+          <AlertDialogTitle>¿Finalizar el prospecto?</AlertDialogTitle>
           <AlertDialogDescription>
             Confirma que ya entregaste la unidad a {prospecto?.nombre}. Un prospecto
             finalizado ya no cambia de etapa.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <label className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-3 text-sm">
-          <input
-            type="checkbox"
-            className="mt-0.5 size-4 cursor-pointer accent-primary"
-            checked={sinApp}
-            onChange={(e) => setSinApp(e.target.checked)}
-            aria-labelledby="sin-app-titulo"
-            aria-describedby="sin-app-ayuda"
-          />
-          <span className="flex flex-col gap-1">
-            <span id="sin-app-titulo" className="font-medium">
-              El cliente no quiere la app CareCar
-            </span>
-            <span id="sin-app-ayuda" className="text-muted-foreground">
-              {sinApp
-                ? 'No se le creará cuenta en la app.'
-                : prospecto?.correo
-                  ? `Su cuenta de la app se creará con ${prospecto.correo}.`
-                  : 'Para crear su cuenta de la app hace falta su correo.'}
-            </span>
-          </span>
-        </label>
+        <FieldLabel htmlFor="sin-app">
+          <Field orientation="horizontal">
+            <Checkbox
+              id="sin-app"
+              checked={sinApp}
+              onCheckedChange={(marcado) => setSinApp(marcado === true)}
+              aria-labelledby="sin-app-titulo"
+              aria-describedby="sin-app-ayuda"
+            />
+            <FieldContent>
+              <FieldTitle id="sin-app-titulo">El cliente no quiere la app CareCar</FieldTitle>
+              <FieldDescription id="sin-app-ayuda">
+                {sinApp
+                  ? 'No se le creará cuenta en la app.'
+                  : prospecto?.correo
+                    ? `Su cuenta de la app se creará con ${prospecto.correo}.`
+                    : 'Para crear su cuenta de la app hace falta su correo.'}
+              </FieldDescription>
+            </FieldContent>
+          </Field>
+        </FieldLabel>
         {pideCorreo && (
           <Field data-invalid={!!errorCorreo}>
             <FieldLabel htmlFor="correo-cliente">Correo del cliente</FieldLabel>

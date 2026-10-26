@@ -1,11 +1,11 @@
-import { Car, Contact, Plus, Search } from 'lucide-react'
+import { Car, Contact, Mail, MailX, Plus, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import {
   Table,
   TableBody,
@@ -25,7 +25,14 @@ import {
 import { DialogoAgregarCliente } from '../clientes/DialogoAgregarCliente.tsx'
 import { DialogoCliente } from '../clientes/DialogoCliente.tsx'
 import { EncabezadoPagina } from '../componentes/EncabezadoPagina.tsx'
-import { EstadoVacio } from '../componentes/EstadoVacio.tsx'
+import { TarjetasResumen } from '../componentes/TarjetasResumen.tsx'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { Paginacion } from '../componentes/Paginacion.tsx'
 import { TablaCargando } from '../componentes/TablaCargando.tsx'
 import { formatearTelefono } from '../prospectos/formato.ts'
@@ -120,43 +127,64 @@ export function ClientesPage() {
         <TablaCargando />
       ) : (
         <>
-          <div className="flex flex-col gap-2 md:max-w-md">
-            <Label htmlFor="buscar-cliente">Buscar cliente</Label>
-            <div className="relative">
-              <Search
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
+          <TarjetasResumen
+            titulo="Resumen de clientes"
+            indicadores={[
+              { etiqueta: 'Clientes', valor: clientes.length, icono: Contact },
+              {
+                etiqueta: 'Vehículos',
+                valor: clientes.reduce((suma, c) => suma + c.vehiculos, 0),
+                icono: Car,
+              },
+              {
+                etiqueta: 'Con correo',
+                valor: clientes.filter((c) => c.correo).length,
+                icono: Mail,
+                detalle: 'Pueden usar la app CareCar',
+              },
+              {
+                etiqueta: 'Sin correo',
+                valor: clientes.filter((c) => !c.correo).length,
+                icono: MailX,
+                detalle: 'No usan la app',
+              },
+            ]}
+          />
+          <Field className="md:max-w-md">
+            <FieldLabel htmlFor="buscar-cliente">Buscar cliente</FieldLabel>
+            <InputGroup>
+              <InputGroupAddon>
+                <Search aria-hidden="true" />
+              </InputGroupAddon>
+              <InputGroupInput
                 id="buscar-cliente"
                 type="search"
                 placeholder="Nombre o correo"
-                className="pl-9"
                 value={busqueda}
                 onChange={(e) => {
                   setBusqueda(e.target.value)
                   setPagina(1)
                 }}
               />
-            </div>
-          </div>
+            </InputGroup>
+          </Field>
 
           {filtrados.length === 0 ? (
-            <Card>
-              <EstadoVacio
-                icono={clientes.length === 0 ? Contact : Search}
-                titulo={
-                  clientes.length === 0
-                    ? 'Aún no hay clientes'
-                    : 'Ningún cliente coincide'
-                }
-                descripcion={
-                  clientes.length === 0
+            <Empty className="border">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  {clientes.length === 0 ? <Contact /> : <Search />}
+                </EmptyMedia>
+                <EmptyTitle>
+                  {clientes.length === 0 ? 'Aún no hay clientes' : 'Ningún cliente coincide'}
+                </EmptyTitle>
+                <EmptyDescription>
+                  {clientes.length === 0
                     ? 'Aparecen aquí cuando un prospecto llega a Finalizado.'
-                    : 'Prueba con otro nombre o correo.'
-                }
-              />
-            </Card>
+                    : 'Prueba con otro nombre o correo.'}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <>
               <ListaClientes
@@ -215,9 +243,9 @@ function ListaClientes({ clientes, onVer }: PropsLista) {
 
   if (!movil) {
     return (
-      <Card className="py-0 md:py-0">
+      <div className="overflow-hidden rounded-lg border">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted">
             <TableRow>
               <TableHead>Cliente / correo</TableHead>
               <TableHead>Teléfono</TableHead>
@@ -241,7 +269,7 @@ function ListaClientes({ clientes, onVer }: PropsLista) {
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </div>
     )
   }
 

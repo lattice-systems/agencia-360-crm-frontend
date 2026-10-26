@@ -72,9 +72,9 @@ export function DialogoSolicitarCierre({ prospecto, onCerrar, onSolicitado }: Pr
     <Dialog open={prospecto !== null} onOpenChange={(abrir) => !abrir && cerrar()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">Solicitar cierre</DialogTitle>
+          <DialogTitle>Solicitar cierre</DialogTitle>
           <DialogDescription>
-            <span className="block text-base font-semibold text-primary">
+            <span className="block font-medium text-foreground">
               {prospecto?.nombre}
             </span>
             El Administrador revisará la solicitud y decidirá si se cierra.
@@ -100,7 +100,7 @@ export function DialogoSolicitarCierre({ prospecto, onCerrar, onSolicitado }: Pr
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Alert variant="informacion" role="note">
+            <Alert role="note">
               <Info aria-hidden="true" />
               <AlertTitle>Requiere autorización</AlertTitle>
               <AlertDescription>

@@ -4,6 +4,7 @@ import type { UsuarioApi } from '../api/acceso.ts'
 import { useMensajeDeError } from '../api/useConsulta.ts'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Field, FieldLabel } from '@/components/ui/field'
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Select,
   SelectContent,
@@ -88,22 +89,22 @@ export function DialogoReasignarVarios({
     <Dialog open={prospectos !== null} onOpenChange={(abrir) => !abrir && cerrar()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">Reasignar prospectos</DialogTitle>
+          <DialogTitle>Reasignar prospectos</DialogTitle>
           <DialogDescription>
             {cuantos === 1 ? '1 prospecto elegido' : `${cuantos} prospectos elegidos`}. Todos
             pasarán al mismo vendedor.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
-          <ul className="max-h-32 overflow-y-auto rounded-md border px-3 py-2 text-sm">
-            {prospectos?.map((p) => (
-              <li key={p.id} className="py-0.5">
-                {p.nombre}
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="vendedor-varios">Nuevo vendedor</Label>
+          <ScrollArea className="rounded-md border *:data-[slot=scroll-area-viewport]:max-h-32">
+            <ul className="flex flex-col gap-1 px-3 py-2 text-sm">
+              {prospectos?.map((p) => (
+                <li key={p.id}>{p.nombre}</li>
+              ))}
+            </ul>
+          </ScrollArea>
+          <Field>
+            <FieldLabel htmlFor="vendedor-varios">Nuevo vendedor</FieldLabel>
             <Select value={vendedorId} onValueChange={setVendedorId}>
               <SelectTrigger
                 id="vendedor-varios"
@@ -120,13 +121,13 @@ export function DialogoReasignarVarios({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Alert variant="informacion" role="note">
+          <Alert role="note">
             <Info aria-hidden="true" />
             <AlertTitle>Cambiará la visibilidad</AlertTitle>
             <AlertDescription>

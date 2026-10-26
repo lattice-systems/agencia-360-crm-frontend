@@ -1,22 +1,19 @@
-import { ClipboardList, ShieldCheck, Users, type LucideIcon } from 'lucide-react'
+import { CircleAlert, Clock } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Spinner } from '@/components/ui/spinner'
 import { iniciarSesion } from '../api/acceso.ts'
 import { mensajeDeError } from '../api/cliente.ts'
 import { CampoContrasena } from '../componentes/CampoContrasena.tsx'
+import { SelectorTema } from '../componentes/SelectorTema.tsx'
 import { useSesion } from '../sesion/useSesion.ts'
 
-const BENEFICIOS: { icono: LucideIcon; texto: string }[] = [
-  { icono: Users, texto: 'Prospectos a tu alcance' },
-  { icono: ClipboardList, texto: 'Seguimiento por etapas' },
-  { icono: ShieldCheck, texto: 'Información según tu rol' },
-]
-
-/** Inicio de sesión del CRM (CRM-0.1): panel de marca a la izquierda y formulario. */
+/** Inicio de sesión del CRM (CRM-0.1), con la forma del bloque login-03 de shadcn. */
 export function LoginPage() {
   const { sesion, aviso, iniciar } = useSesion()
   const navegar = useNavigate()
@@ -25,6 +22,8 @@ export function LoginPage() {
   const [contrasena, setContrasena] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  // Tras un intento con campos vacíos, marca en rojo los que faltan.
+  const [validar, setValidar] = useState(false)
 
   const destino = (ubicacion.state as { desde?: string } | null)?.desde ?? '/'
 
@@ -35,6 +34,7 @@ export function LoginPage() {
   async function enviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     if (!usuario.trim() || !contrasena) {
+      setValidar(true)
       setError('Escribe tu usuario y tu contraseña.')
       return
     }
@@ -54,87 +54,99 @@ export function LoginPage() {
     }
   }
 
+  const faltaUsuario = validar && !usuario.trim()
+  const faltaContrasena = validar && !contrasena
+
   return (
-    <main className="grid min-h-svh bg-background lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-      <aside className="hidden flex-col bg-primary p-12 text-primary-foreground lg:flex">
-        <img src="/agencia360-logo-blanco.svg" alt="Agencia360" className="h-auto w-[240px]" />
-        <span className="mt-8 w-fit rounded-full bg-white/10 px-3 py-1 text-sm text-marca-acento">
-          Agencia360 · CRM
-        </span>
-        <p className="mt-8 text-4xl font-bold">Todo en su lugar.</p>
-        <p className="mt-4 max-w-sm text-xl text-primary-foreground/85">
-          Gestiona tus prospectos y da continuidad a cada contacto.
-        </p>
-        <div aria-hidden="true" className="my-10 h-px max-w-md bg-white/15" />
-        <ul className="flex flex-col gap-6">
-          {BENEFICIOS.map(({ icono: Icono, texto }) => (
-            <li key={texto} className="flex items-center gap-3 text-lg">
-              <Icono aria-hidden="true" className="size-5" />
-              {texto}
-            </li>
-          ))}
-        </ul>
-        <p className="mt-auto text-sm text-primary-foreground/75">
-          Una identidad. Cada área conectada.
-        </p>
-      </aside>
-
-      <div className="flex flex-col px-4 py-10 sm:px-10 lg:px-16">
-        <div className="my-auto w-full max-w-md lg:mx-auto">
-          <img
-            src="/agencia360-logo.svg"
-            alt="Agencia360"
-            className="mb-10 h-auto w-[200px] lg:hidden"
-          />
-          <h1 className="text-3xl font-bold text-primary">Iniciar sesión</h1>
-          <p className="mt-2 text-muted-foreground">Accede a Agencia360 · CRM</p>
-
-          <form onSubmit={enviar} noValidate className="mt-8">
-            <FieldGroup className="gap-5">
-              {aviso && (
-                <Alert variant="advertencia" role="status">
-                  <AlertDescription>{aviso}</AlertDescription>
-                </Alert>
-              )}
-              <Field>
-                <FieldLabel htmlFor="usuario">Usuario</FieldLabel>
-                <Input
-                  id="usuario"
-                  name="usuario"
-                  autoComplete="username"
-                  className="h-11"
-                  value={usuario}
-                  onChange={(e) => setUsuario(e.target.value)}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="contrasena">Contraseña</FieldLabel>
-                <CampoContrasena
-                  id="contrasena"
-                  name="contrasena"
-                  autoComplete="current-password"
-                  className="h-11"
-                  value={contrasena}
-                  onChange={(e) => setContrasena(e.target.value)}
-                />
-              </Field>
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <Button type="submit" className="mt-2 h-11 w-full" disabled={enviando}>
-                {enviando ? 'Entrando…' : 'Entrar al CRM'}
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                Si necesitas acceso, contacta al gerente de marketing de tu agencia.
-              </p>
-            </FieldGroup>
-          </form>
-        </div>
-        <p className="mt-10 text-xs text-muted-foreground lg:mx-auto lg:w-full lg:max-w-md">
+    <main className="relative isolate flex min-h-svh flex-col items-center justify-center gap-6 overflow-hidden bg-muted p-6 md:p-10">
+      {/*
+       * Foto de un showroom Nissan (Unsplash, licencia libre, sin atribución
+       * obligatoria: unsplash.com/photos/RVEdgp-dkYY). El velo oscuro deja
+       * legibles el selector de tema y el aviso de abajo.
+       */}
+      <img
+        src="/fondo-login.jpg"
+        alt=""
+        className="absolute inset-0 -z-10 size-full object-cover"
+      />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/55" />
+      <SelectorTema className="absolute top-4 right-4" />
+      <div className="flex w-full max-w-md flex-col gap-6">
+        <Card>
+          <CardHeader className="text-center">
+            <img
+              src="/agencia360-logo.svg"
+              alt="Agencia360"
+              className="mx-auto mb-2 h-auto w-40 dark:hidden"
+            />
+            <img
+              src="/agencia360-logo-blanco.svg"
+              alt="Agencia360"
+              className="mx-auto mb-2 hidden h-auto w-40 dark:block"
+            />
+            <CardTitle>
+              <h1>Iniciar sesión</h1>
+            </CardTitle>
+            <CardDescription>
+              Ingresa al CRM con el usuario y la contraseña de tu agencia.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={enviar} noValidate>
+              <FieldGroup>
+                {aviso && (
+                  <Alert variant="warning" role="status">
+                    <Clock aria-hidden="true" />
+                    <AlertDescription>{aviso}</AlertDescription>
+                  </Alert>
+                )}
+                <Field data-invalid={faltaUsuario || undefined}>
+                  <FieldLabel htmlFor="usuario">Usuario</FieldLabel>
+                  <Input
+                    id="usuario"
+                    name="usuario"
+                    autoComplete="username"
+                    aria-invalid={faltaUsuario || undefined}
+                    value={usuario}
+                    onChange={(e) => setUsuario(e.target.value)}
+                  />
+                </Field>
+                <Field data-invalid={faltaContrasena || undefined}>
+                  <FieldLabel htmlFor="contrasena">Contraseña</FieldLabel>
+                  <CampoContrasena
+                    id="contrasena"
+                    name="contrasena"
+                    autoComplete="current-password"
+                    aria-invalid={faltaContrasena || undefined}
+                    value={contrasena}
+                    onChange={(e) => setContrasena(e.target.value)}
+                  />
+                </Field>
+                {error && (
+                  <Alert variant="destructive">
+                    <CircleAlert aria-hidden="true" />
+                    <AlertTitle>No pudimos iniciar sesión</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                <Field>
+                  <Button type="submit" disabled={enviando}>
+                    {enviando && (
+                      <Spinner aria-hidden="true" role={undefined} data-icon="inline-start" />
+                    )}
+                    {enviando ? 'Entrando…' : 'Entrar'}
+                  </Button>
+                  <FieldDescription className="text-center">
+                    Si necesitas acceso, contacta a tu gerente de marketing.
+                  </FieldDescription>
+                </Field>
+              </FieldGroup>
+            </form>
+          </CardContent>
+        </Card>
+        <FieldDescription className="px-6 text-center text-white/80">
           Acceso exclusivo para personal autorizado.
-        </p>
+        </FieldDescription>
       </div>
     </main>
   )
