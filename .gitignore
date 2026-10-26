@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Reporte de auditoría de seguridad (el repo es público; no se versiona)
+SECURITY_REPORT.md
