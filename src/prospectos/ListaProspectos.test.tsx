@@ -560,7 +560,7 @@ describe('Datos fiscales en Pago', () => {
     expect(recibido).toEqual({
       rfc: 'LOHA850101AB1',
       nombre: 'Luis Herrera',
-      domicilio: 'Blvd. López Mateos 1102, León, Gto.',
+      domicilio: DOMICILIO,
       regimenFiscal: '612',
     })
     expect(await botonesDe('Luis Herrera')).toContain('Corregir los datos fiscales de Luis Herrera')
@@ -582,9 +582,8 @@ describe('Datos fiscales en Pago', () => {
     dialogo = await screen.findByRole('dialog', { name: 'Datos fiscales' })
 
     expect(within(dialogo).getByLabelText('RFC')).toHaveValue('LOHA850101AB1')
-    expect(within(dialogo).getByLabelText('Domicilio fiscal')).toHaveValue(
-      'Blvd. López Mateos 1102, León, Gto.',
-    )
+    expect(within(dialogo).getByLabelText('Calle y número')).toHaveValue('Blvd. López Mateos 1102')
+    expect(within(dialogo).getByLabelText('Código postal')).toHaveValue('37000')
   })
 
   it('muestra el mensaje del servidor si los rechaza', async () => {
