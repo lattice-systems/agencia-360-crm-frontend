@@ -1,4 +1,5 @@
 import { peticion } from '../api/cliente.ts'
+import type { DatosFiscales } from './datosFiscales.ts'
 import type {
   Etapa,
   MotivoCierre,
@@ -59,7 +60,13 @@ export function cambiarEtapa(
     clienteRechazaApp = false,
     correoCliente,
     precioTotal,
-  }: { clienteRechazaApp?: boolean; correoCliente?: string; precioTotal?: number } = {},
+    datosFiscales,
+  }: {
+    clienteRechazaApp?: boolean
+    correoCliente?: string
+    precioTotal?: number
+    datosFiscales?: DatosFiscales
+  } = {},
 ): Promise<Prospecto> {
   // Al finalizar: si el cliente no quiere la app, no se le crea la cuenta; si
   // sí la quiere y el prospecto no tiene correo, se manda el que capturó el
@@ -72,6 +79,7 @@ export function cambiarEtapa(
       ...(clienteRechazaApp ? { clienteRechazaApp } : {}),
       ...(correoCliente ? { correoCliente } : {}),
       ...(precioTotal !== undefined ? { precioTotal } : {}),
+      ...(datosFiscales ? { datosFiscales } : {}),
     },
   })
 }
