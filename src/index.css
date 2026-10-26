@@ -17,17 +17,16 @@
   /* Azul Agencia (#1D3557): único color de marca sobre el tema de shadcn. */
   --primary: oklch(0.328 0.068 257.272);
   --primary-foreground: oklch(0.985 0 0);
-  /* Turquesa de marca como acento: secundario, sección activa y foco. */
-  --secondary: oklch(0.95 0.04 182);
-  --secondary-foreground: oklch(0.36 0.07 185);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.95 0.04 182);
-  --accent-foreground: oklch(0.38 0.07 185);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.7 0.11 182);
+  --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);
   --chart-3: oklch(0.546 0.245 262.881);
@@ -37,10 +36,10 @@
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.328 0.068 257.272);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.93 0.05 182);
-  --sidebar-accent-foreground: oklch(0.36 0.07 185);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.7 0.11 182);
+  --sidebar-ring: oklch(0.708 0 0);
 
   /* Estados que shadcn no trae (Disponible, Bajo mínimo, Validada…). */
   --success: oklch(0.448 0.119 151.328);
@@ -58,16 +57,16 @@
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.715 0.082 253.99);
   --primary-foreground: oklch(0.204 0.029 259.863);
-  --secondary: oklch(0.3 0.05 185);
-  --secondary-foreground: oklch(0.92 0.05 182);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.3 0.05 185);
-  --accent-foreground: oklch(0.9 0.06 182);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.1 182);
+  --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);
   --chart-3: oklch(0.546 0.245 262.881);
@@ -77,10 +76,10 @@
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.715 0.082 253.99);
   --sidebar-primary-foreground: oklch(0.204 0.029 259.863);
-  --sidebar-accent: oklch(0.32 0.05 185);
-  --sidebar-accent-foreground: oklch(0.92 0.05 182);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.6 0.1 182);
+  --sidebar-ring: oklch(0.556 0 0);
 
   --success: oklch(0.792 0.209 151.711);
   --success-foreground: oklch(0.266 0.065 152.934);
