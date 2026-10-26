@@ -80,7 +80,7 @@ describe('Menú de perfil (CRM-UX-2)', () => {
     expect(within(menu).getByText('Gerente de marketing')).toBeInTheDocument()
     await usuario.click(within(menu).getByRole('menuitem', { name: 'Cerrar sesión' }))
 
-    expect(screen.getByRole('button', { name: 'Entrar al CRM' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Entrar' })).toBeInTheDocument()
     expect(sessionStorage.length).toBe(0)
   })
 })

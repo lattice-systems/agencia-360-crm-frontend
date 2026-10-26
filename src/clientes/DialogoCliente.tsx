@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Car } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -14,9 +15,17 @@ import {
 } from '@/components/ui/dialog'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemTitle,
+} from '@/components/ui/item'
 import { ErrorApi } from '../api/cliente.ts'
 import { useConsulta, useMensajeDeError } from '../api/useConsulta.ts'
-import { ChipEstado } from '../componentes/ChipEstado.tsx'
+import { Badge } from '@/components/ui/badge'
 import {
   abrirCuentaApp,
   activarCuentaApp,
@@ -48,7 +57,7 @@ export function DialogoCliente({
     <Dialog open={cliente !== null} onOpenChange={(abrir) => !abrir && onCerrar()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">{cliente?.nombre}</DialogTitle>
+          <DialogTitle>{cliente?.nombre}</DialogTitle>
           <DialogDescription>{cliente?.correo ?? SIN_CORREO}</DialogDescription>
         </DialogHeader>
         {cliente && (
@@ -143,15 +152,15 @@ function SeccionCuenta({
   }
 
   const tono =
-    cuenta.estado === 'ACTIVA' ? 'exito' : cuenta.estado === 'DESACTIVADA' ? 'peligro' : 'neutro'
+    cuenta.estado === 'ACTIVA' ? 'success' : cuenta.estado === 'DESACTIVADA' ? 'destructive' : 'secondary'
 
   return (
     <section aria-labelledby="titulo-cuenta" className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 id="titulo-cuenta" className="font-semibold text-primary">
+        <h3 id="titulo-cuenta" className="font-semibold">
           Cuenta de la app
         </h3>
-        <ChipEstado tono={tono}>{TEXTO_ESTADO[cuenta.estado]}</ChipEstado>
+        <Badge variant={tono}>{TEXTO_ESTADO[cuenta.estado]}</Badge>
       </div>
       {cuenta.estado === 'SIN_CUENTA' && !cliente.correo && (
         <p className="text-sm text-muted-foreground">
@@ -263,7 +272,7 @@ function SeccionVehiculos({
 
   return (
     <section aria-labelledby="titulo-vehiculos" className="flex flex-col gap-3">
-      <h3 id="titulo-vehiculos" className="font-semibold text-primary">
+      <h3 id="titulo-vehiculos" className="font-semibold">
         Vehículos
       </h3>
       {cliente.vehiculos.length === 0 ? (
@@ -271,28 +280,33 @@ function SeccionVehiculos({
           Este cliente todavía no tiene vehículos.
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ItemGroup className="gap-2">
           {cliente.vehiculos.map((v) => (
-            <li key={v.id} className="rounded-md border p-3">
-              <p className="font-medium">
-                {v.modelo} {v.anio}
-              </p>
-              <p className="font-mono text-xs text-muted-foreground">VIN {v.vin}</p>
-              <p className="text-sm text-muted-foreground">
-                {v.placas ? `Placas ${v.placas}` : 'Sin placas registradas'}
-                {v.kilometraje !== null &&
-                  ` · ${v.kilometraje.toLocaleString('es-MX')} km`}
-              </p>
-            </li>
+            <Item key={v.id} variant="outline" size="sm">
+              <ItemMedia variant="icon">
+                <Car aria-hidden="true" />
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle>
+                  {v.modelo} {v.anio}
+                </ItemTitle>
+                <ItemDescription>
+                  <span className="font-mono">VIN {v.vin}</span>
+                  <br />
+                  {v.placas ? `Placas ${v.placas}` : 'Sin placas registradas'}
+                  {v.kilometraje !== null && ` · ${v.kilometraje.toLocaleString('es-MX')} km`}
+                </ItemDescription>
+              </ItemContent>
+            </Item>
           ))}
-        </ul>
+        </ItemGroup>
       )}
 
       <form
         noValidate
         aria-label="Asignar vehículo"
         onSubmit={handleSubmit(guardar)}
-        className="flex flex-col gap-3 rounded-md border border-dashed p-3"
+        className="flex flex-col gap-3 rounded-lg bg-muted/50 p-4"
       >
         {errorApi && (
           <Alert variant="destructive">

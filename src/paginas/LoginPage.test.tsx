@@ -13,7 +13,7 @@ async function llenarYEnviar(usuario: string, contrasena: string) {
   const user = userEvent.setup()
   await user.type(screen.getByLabelText('Usuario'), usuario)
   await user.type(screen.getByLabelText('Contraseña'), contrasena)
-  await user.click(screen.getByRole('button', { name: 'Entrar al CRM' }))
+  await user.click(screen.getByRole('button', { name: 'Entrar' }))
 }
 
 describe('Inicio de sesión', () => {
@@ -81,7 +81,7 @@ describe('Inicio de sesión', () => {
 
     await userEvent
       .setup()
-      .click(screen.getByRole('button', { name: 'Entrar al CRM' }))
+      .click(screen.getByRole('button', { name: 'Entrar' }))
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Escribe tu usuario y tu contraseña.',

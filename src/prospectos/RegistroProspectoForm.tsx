@@ -145,7 +145,7 @@ function RegistroProspectoForm() {
       <Card>
         <form noValidate onSubmit={handleSubmit(registrar)} className="flex flex-col gap-6">
           <CardHeader>
-            <CardTitle className="text-lg text-primary">Información de contacto</CardTitle>
+            <CardTitle>Información de contacto</CardTitle>
             <CardDescription>Escribe el nombre y al menos un medio de contacto.</CardDescription>
           </CardHeader>
 
@@ -217,7 +217,7 @@ function RegistroProspectoForm() {
               </FieldDescription>
 
               {contactoRepetido && (
-                <Alert variant="advertencia" role="status">
+                <Alert variant="warning" role="status">
                   <TriangleAlert aria-hidden="true" />
                   <AlertTitle>Este contacto ya existe</AlertTitle>
                   <AlertDescription>

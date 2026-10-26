@@ -103,7 +103,7 @@ export function DialogoAgregarCliente({
     <Dialog open={abierto} onOpenChange={(abrir) => !abrir && cerrar()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">Agregar cliente</DialogTitle>
+          <DialogTitle>Agregar cliente</DialogTitle>
           <DialogDescription>
             Para casos especiales. Los clientes se registran solos cuando su
             prospecto llega a Finalizado.

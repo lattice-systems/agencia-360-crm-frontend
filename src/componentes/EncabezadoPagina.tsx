@@ -15,7 +15,7 @@ export function EncabezadoPagina({ titulo, descripcion, accion }: Props) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold text-primary">{titulo}</h1>
+        <h1 className="text-2xl font-semibold">{titulo}</h1>
         {descripcion && <p className="text-sm text-muted-foreground">{descripcion}</p>}
       </div>
       {accion}

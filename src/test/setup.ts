@@ -13,6 +13,14 @@ Element.prototype.setPointerCapture ??= () => {}
 Element.prototype.releasePointerCapture ??= () => {}
 Element.prototype.scrollIntoView ??= () => {}
 
+// Checkbox y ScrollArea de Radix miden su tamaño con ResizeObserver, que jsdom
+// tampoco trae.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 // jsdom no implementa matchMedia; el menú lateral lo usa para saber si es
 // celular. Las pruebas corren como escritorio.
 Object.defineProperty(window, 'matchMedia', {

@@ -4,6 +4,7 @@ import type { UsuarioApi } from '../api/acceso.ts'
 import { useMensajeDeError } from '../api/useConsulta.ts'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Field, FieldLabel } from '@/components/ui/field'
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -87,7 +87,7 @@ export function DialogoReasignar({
     <Dialog open={prospecto !== null} onOpenChange={(abrir) => !abrir && cerrar()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl text-primary">
+          <DialogTitle>
             Reasignar prospecto
           </DialogTitle>
           <DialogDescription>
@@ -98,8 +98,8 @@ export function DialogoReasignar({
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="nuevo-vendedor">Nuevo vendedor</Label>
+          <Field>
+            <FieldLabel htmlFor="nuevo-vendedor">Nuevo vendedor</FieldLabel>
             <Select value={vendedorId} onValueChange={setVendedorId}>
               <SelectTrigger
                 id="nuevo-vendedor"
@@ -116,13 +116,13 @@ export function DialogoReasignar({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Field>
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Alert variant="informacion" role="note">
+          <Alert role="note">
             <Info aria-hidden="true" />
             <AlertTitle>Cambiará la visibilidad</AlertTitle>
             <AlertDescription>
