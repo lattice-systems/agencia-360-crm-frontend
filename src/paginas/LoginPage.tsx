@@ -1,10 +1,12 @@
+import { CircleAlert, Clock } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Spinner } from '@/components/ui/spinner'
 import { iniciarSesion } from '../api/acceso.ts'
 import { mensajeDeError } from '../api/cliente.ts'
 import { CampoContrasena } from '../componentes/CampoContrasena.tsx'
@@ -19,6 +21,8 @@ export function LoginPage() {
   const [contrasena, setContrasena] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  // Tras un intento con campos vacíos, marca en rojo los que faltan.
+  const [validar, setValidar] = useState(false)
 
   const destino = (ubicacion.state as { desde?: string } | null)?.desde ?? '/'
 
@@ -29,6 +33,7 @@ export function LoginPage() {
   async function enviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     if (!usuario.trim() || !contrasena) {
+      setValidar(true)
       setError('Escribe tu usuario y tu contraseña.')
       return
     }
@@ -48,6 +53,9 @@ export function LoginPage() {
     }
   }
 
+  const faltaUsuario = validar && !usuario.trim()
+  const faltaContrasena = validar && !contrasena
+
   return (
     <main className="relative isolate flex min-h-svh flex-col items-center justify-center gap-6 overflow-hidden bg-muted p-6 md:p-10">
       {/*
@@ -62,54 +70,58 @@ export function LoginPage() {
       />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/55" />
       <div className="flex w-full max-w-sm flex-col gap-6">
-        <img
-          src="/agencia360-logo-blanco.svg"
-          alt="Agencia360"
-          className="h-auto w-44 self-center"
-        />
         <Card>
           <CardHeader className="text-center">
+            <img src="/agencia360-logo.svg" alt="Agencia360" className="mx-auto mb-2 h-auto w-40" />
             <CardTitle>
               <h1>Iniciar sesión</h1>
             </CardTitle>
-            <CardDescription>Accede a Agencia360 · CRM</CardDescription>
+            <CardDescription>Ingresa con el usuario y la contraseña de tu agencia.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={enviar} noValidate>
               <FieldGroup>
                 {aviso && (
                   <Alert variant="warning" role="status">
+                    <Clock aria-hidden="true" />
                     <AlertDescription>{aviso}</AlertDescription>
                   </Alert>
                 )}
-                <Field>
+                <Field data-invalid={faltaUsuario || undefined}>
                   <FieldLabel htmlFor="usuario">Usuario</FieldLabel>
                   <Input
                     id="usuario"
                     name="usuario"
                     autoComplete="username"
+                    aria-invalid={faltaUsuario || undefined}
                     value={usuario}
                     onChange={(e) => setUsuario(e.target.value)}
                   />
                 </Field>
-                <Field>
+                <Field data-invalid={faltaContrasena || undefined}>
                   <FieldLabel htmlFor="contrasena">Contraseña</FieldLabel>
                   <CampoContrasena
                     id="contrasena"
                     name="contrasena"
                     autoComplete="current-password"
+                    aria-invalid={faltaContrasena || undefined}
                     value={contrasena}
                     onChange={(e) => setContrasena(e.target.value)}
                   />
                 </Field>
                 {error && (
                   <Alert variant="destructive">
+                    <CircleAlert aria-hidden="true" />
+                    <AlertTitle>No pudimos iniciar sesión</AlertTitle>
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
                 <Field>
                   <Button type="submit" disabled={enviando}>
-                    {enviando ? 'Entrando…' : 'Entrar al CRM'}
+                    {enviando && (
+                      <Spinner aria-hidden="true" role={undefined} data-icon="inline-start" />
+                    )}
+                    {enviando ? 'Entrando…' : 'Entrar'}
                   </Button>
                   <FieldDescription className="text-center">
                     Si necesitas acceso, contacta al gerente de marketing de tu agencia.

@@ -11,7 +11,7 @@ describe('App', () => {
       screen.getByRole('heading', { level: 1, name: 'Iniciar sesión' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Entrar al CRM' }),
+      screen.getByRole('button', { name: 'Entrar' }),
     ).toBeInTheDocument()
   })
 
@@ -19,7 +19,7 @@ describe('App', () => {
     renderApp('/no-existe')
 
     expect(
-      screen.getByRole('button', { name: 'Entrar al CRM' }),
+      screen.getByRole('button', { name: 'Entrar' }),
     ).toBeInTheDocument()
   })
 

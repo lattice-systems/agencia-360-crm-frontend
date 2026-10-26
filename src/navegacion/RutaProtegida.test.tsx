@@ -12,7 +12,7 @@ describe('Rutas protegidas y menú por rol', () => {
     renderApp('/prospectos')
 
     expect(
-      screen.getByRole('button', { name: 'Entrar al CRM' }),
+      screen.getByRole('button', { name: 'Entrar' }),
     ).toBeInTheDocument()
   })
 
@@ -78,7 +78,7 @@ describe('Rutas protegidas y menú por rol', () => {
     )
 
     expect(
-      screen.getByRole('button', { name: 'Entrar al CRM' }),
+      screen.getByRole('button', { name: 'Entrar' }),
     ).toBeInTheDocument()
     expect(sessionStorage.length).toBe(0)
   })
