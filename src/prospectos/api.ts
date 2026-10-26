@@ -84,6 +84,17 @@ export function cambiarEtapa(
   })
 }
 
+/**
+ * ERP-1.3: el vendedor captura o corrige los datos fiscales de su prospecto
+ * mientras está en Pago. Sin ellos Contabilidad no puede validar los pagos.
+ */
+export function capturarDatosFiscales(id: number, datosFiscales: DatosFiscales): Promise<Prospecto> {
+  return peticion(`${URL_PROSPECTOS}/${id}/datos-fiscales`, {
+    metodo: 'PUT',
+    cuerpo: datosFiscales,
+  })
+}
+
 /** Desde Pago en adelante el cierre lo aprueba el Administrador. */
 export function solicitarCierre(
   id: number,
