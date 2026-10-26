@@ -47,11 +47,59 @@ const CLAVES_REGIMEN: readonly string[] = REGIMENES_FISCALES.map((r) => r.clave)
  */
 const RFC = /^[A-ZÑ&]{3,4}\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[A-Z\d]{3}$/
 
+/** Entidades federativas, para el estado del domicilio fiscal. */
+export const ESTADOS = [
+  'Aguascalientes',
+  'Baja California',
+  'Baja California Sur',
+  'Campeche',
+  'Chiapas',
+  'Chihuahua',
+  'Ciudad de México',
+  'Coahuila',
+  'Colima',
+  'Durango',
+  'Estado de México',
+  'Guanajuato',
+  'Guerrero',
+  'Hidalgo',
+  'Jalisco',
+  'Michoacán',
+  'Morelos',
+  'Nayarit',
+  'Nuevo León',
+  'Oaxaca',
+  'Puebla',
+  'Querétaro',
+  'Quintana Roo',
+  'San Luis Potosí',
+  'Sinaloa',
+  'Sonora',
+  'Tabasco',
+  'Tamaulipas',
+  'Tlaxcala',
+  'Veracruz',
+  'Yucatán',
+  'Zacatecas',
+] as const
+
+/**
+ * Domicilio fiscal separado como lo pidió el PO el 26 de octubre: estado,
+ * ciudad, colonia, calle y número, y código postal.
+ */
+export interface DomicilioFiscal {
+  estado: string
+  ciudad: string
+  colonia: string
+  calleNumero: string
+  codigoPostal: string
+}
+
 /** Datos fiscales del cliente como los manda el CRM. */
 export interface DatosFiscales {
   rfc: string
   nombre: string
-  domicilio: string
+  domicilio: DomicilioFiscal
   /** Clave del catálogo del SAT, por ejemplo "612". */
   regimenFiscal: string
 }
@@ -59,6 +107,13 @@ export interface DatosFiscales {
 /** Como los regresa el backend: con la descripción del régimen. */
 export interface DatosFiscalesVista extends DatosFiscales {
   regimenFiscalDescripcion: string
+}
+
+const ESTADOS_VALIDOS: readonly string[] = ESTADOS
+
+/** Texto obligatorio con largo máximo; los largos son los del backend. */
+function texto(vacio: string, maximo: number, largo: string) {
+  return z.string().trim().min(1, vacio).max(maximo, largo)
 }
 
 /**
@@ -75,22 +130,34 @@ export const esquemaDatosFiscales = z.object({
         .min(1, 'Escribe el RFC del cliente.')
         .regex(RFC, 'El RFC no tiene un formato válido, por ejemplo LOHA850101AB1.'),
     ),
-  nombre: z
-    .string()
-    .trim()
-    .min(1, 'Escribe el nombre completo como aparece en su constancia fiscal.')
-    .max(200, 'El nombre admite hasta 200 caracteres.'),
-  domicilio: z
-    .string()
-    .trim()
-    .min(1, 'Escribe el domicilio fiscal.')
-    .max(250, 'El domicilio admite hasta 250 caracteres.'),
+  nombre: texto(
+    'Escribe el nombre completo como aparece en su constancia fiscal.',
+    200,
+    'El nombre admite hasta 200 caracteres.',
+  ),
+  domicilio: z.object({
+    estado: z.string().refine((estado) => ESTADOS_VALIDOS.includes(estado), 'Elige el estado.'),
+    ciudad: texto('Escribe la ciudad.', 60, 'La ciudad admite hasta 60 caracteres.'),
+    colonia: texto('Escribe la colonia.', 80, 'La colonia admite hasta 80 caracteres.'),
+    calleNumero: texto(
+      'Escribe la calle y el número.',
+      90,
+      'La calle y el número admiten hasta 90 caracteres.',
+    ),
+    codigoPostal: z
+      .string()
+      .trim()
+      .regex(/^\d{5}$/, 'El código postal son 5 dígitos.'),
+  }),
   regimenFiscal: z
     .string()
     .refine((clave) => CLAVES_REGIMEN.includes(clave), 'Elige el régimen fiscal.'),
 })
 
-export type ErroresDatosFiscales = Partial<Record<keyof DatosFiscales, string>>
+/** Los campos del formulario: los del cliente y los del domicilio. */
+export type CampoFiscal = Exclude<keyof DatosFiscales, 'domicilio'> | keyof DomicilioFiscal
+
+export type ErroresDatosFiscales = Partial<Record<CampoFiscal, string>>
 
 /** Valida lo capturado; regresa los datos limpios o el primer error de cada campo. */
 export function validarDatosFiscales(
@@ -100,7 +167,8 @@ export function validarDatosFiscales(
   if (resultado.success) return { datos: resultado.data }
   const errores: ErroresDatosFiscales = {}
   for (const problema of resultado.error.issues) {
-    const campo = problema.path[0] as keyof DatosFiscales
+    // Los del domicilio vienen como ['domicilio', 'colonia']: cuenta el último.
+    const campo = problema.path[problema.path.length - 1] as CampoFiscal
     errores[campo] ??= problema.message
   }
   return { errores }
@@ -109,6 +177,6 @@ export function validarDatosFiscales(
 export const DATOS_FISCALES_VACIOS: DatosFiscales = {
   rfc: '',
   nombre: '',
-  domicilio: '',
+  domicilio: { estado: '', ciudad: '', colonia: '', calleNumero: '', codigoPostal: '' },
   regimenFiscal: '',
 }

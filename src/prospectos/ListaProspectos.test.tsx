@@ -42,13 +42,23 @@ async function elegirEnSelect(usuario: Usuario, combo: HTMLElement, opcion: stri
   await usuario.click(await screen.findByRole('option', { name: opcion }))
 }
 
+/** El domicilio fiscal que captura capturarFiscales, como llega al servidor. */
+const DOMICILIO = {
+  estado: 'Guanajuato',
+  ciudad: 'León',
+  colonia: 'Centro',
+  calleNumero: 'Blvd. López Mateos 1102',
+  codigoPostal: '37000',
+}
+
 /** Captura datos fiscales válidos; el nombre ya viene con el del prospecto. */
 async function capturarFiscales(usuario: Usuario, dialogo: HTMLElement) {
   await usuario.type(within(dialogo).getByLabelText('RFC'), 'loha850101ab1')
-  await usuario.type(
-    within(dialogo).getByLabelText('Domicilio fiscal'),
-    'Blvd. López Mateos 1102, León, Gto.',
-  )
+  await elegirEnSelect(usuario, within(dialogo).getByRole('combobox', { name: 'Estado' }), 'Guanajuato')
+  await usuario.type(within(dialogo).getByLabelText('Ciudad'), 'León')
+  await usuario.type(within(dialogo).getByLabelText('Colonia'), 'Centro')
+  await usuario.type(within(dialogo).getByLabelText('Calle y número'), 'Blvd. López Mateos 1102')
+  await usuario.type(within(dialogo).getByLabelText('Código postal'), '37000')
   await elegirEnSelect(
     usuario,
     within(dialogo).getByRole('combobox', { name: 'Régimen fiscal' }),
@@ -294,7 +304,7 @@ describe('Cambio de etapa', () => {
       datosFiscales: {
         rfc: 'LOHA850101AB1',
         nombre: 'Marta Hernández',
-        domicilio: 'Blvd. López Mateos 1102, León, Gto.',
+        domicilio: DOMICILIO,
         regimenFiscal: '612',
       },
     })
@@ -320,7 +330,9 @@ describe('Cambio de etapa', () => {
     expect(
       within(dialogo).getByText('Escribe el nombre completo como aparece en su constancia fiscal.'),
     ).toBeInTheDocument()
-    expect(within(dialogo).getByText('Escribe el domicilio fiscal.')).toBeInTheDocument()
+    expect(within(dialogo).getByText('Elige el estado.')).toBeInTheDocument()
+    expect(within(dialogo).getByText('Escribe la ciudad.')).toBeInTheDocument()
+    expect(within(dialogo).getByText('El código postal son 5 dígitos.')).toBeInTheDocument()
     expect(within(dialogo).getByText('Elige el régimen fiscal.')).toBeInTheDocument()
     expect(within(dialogo).getByLabelText('RFC')).toHaveAttribute('aria-invalid', 'true')
 
