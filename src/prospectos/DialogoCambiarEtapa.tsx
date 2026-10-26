@@ -21,6 +21,13 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { useMensajeDeError } from '../api/useConsulta.ts'
 import { cambiarEtapa } from './api.ts'
+import { CamposDatosFiscales } from './CamposDatosFiscales.tsx'
+import {
+  DATOS_FISCALES_VACIOS,
+  validarDatosFiscales,
+  type DatosFiscales,
+  type ErroresDatosFiscales,
+} from './datosFiscales.ts'
 import { EtapaChip } from './EtapaChip.tsx'
 import { textoAMonto } from './formato.ts'
 import { HistorialEtapas } from './HistorialEtapas.tsx'
@@ -50,7 +57,8 @@ const SIN_PRECIO = 'Escribe el precio total de la venta.'
  * Cambio de etapa con confirmación explícita (CRM-1.1, mockup p. 16). Desde las
  * tres primeras etapas el vendedor puede ir a cualquiera de ellas, a Pago o a
  * Cerrado; al cerrar el motivo es obligatorio y es uno de los tres fijos
- * (CRM-1.2).
+ * (CRM-1.2). Al pasar a Pago pide el precio total (ERP-1.1) y los datos
+ * fiscales del cliente para la factura (ERP-1.3).
  */
 export function DialogoCambiarEtapa({
   prospecto,
@@ -62,6 +70,8 @@ export function DialogoCambiarEtapa({
   const [etapa, setEtapa] = useState<Etapa | ''>('')
   const [motivo, setMotivo] = useState<MotivoCierre | null>(null)
   const [precio, setPrecio] = useState('')
+  const [fiscales, setFiscales] = useState<DatosFiscales>(DATOS_FISCALES_VACIOS)
+  const [erroresFiscales, setErroresFiscales] = useState<ErroresDatosFiscales>({})
   const [errores, setErrores] = useState<{ etapa?: string; motivo?: string; precio?: string }>({})
   const [errorApi, setErrorApi] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -73,7 +83,10 @@ export function DialogoCambiarEtapa({
     setEtapa(etapaSugerida ?? '')
     setMotivo(null)
     setPrecio('')
+    // El nombre fiscal casi siempre es el del prospecto; el vendedor lo corrige si no.
+    setFiscales({ ...DATOS_FISCALES_VACIOS, nombre: prospecto.nombre })
     setErrores({})
+    setErroresFiscales({})
     setErrorApi(null)
   }
 
@@ -96,7 +109,10 @@ export function DialogoCambiarEtapa({
           : undefined,
     }
     setErrores(nuevosErrores)
+    const validacion = etapa === 'PAGO' ? validarDatosFiscales(fiscales) : null
+    setErroresFiscales(validacion?.errores ?? {})
     if (nuevosErrores.etapa || nuevosErrores.motivo || nuevosErrores.precio || !etapa) return
+    if (validacion?.errores) return
 
     setGuardando(true)
     setErrorApi(null)
@@ -105,7 +121,7 @@ export function DialogoCambiarEtapa({
         prospecto.id,
         etapa,
         etapa === 'CERRADO' && motivo ? motivo : undefined,
-        etapa === 'PAGO' ? { precioTotal } : {},
+        etapa === 'PAGO' ? { precioTotal, datosFiscales: validacion?.datos } : {},
       )
       setAbiertoPara(null)
       onCambiado(actualizado)
@@ -193,6 +209,17 @@ export function DialogoCambiarEtapa({
                   errors={errores.precio ? [{ message: errores.precio }] : []}
                 />
               </Field>
+            )}
+
+            {etapa === 'PAGO' && (
+              <CamposDatosFiscales
+                valores={fiscales}
+                errores={erroresFiscales}
+                onCambiar={(valores) => {
+                  setFiscales(valores)
+                  setErroresFiscales({})
+                }}
+              />
             )}
 
             {etapa === 'CERRADO' && (

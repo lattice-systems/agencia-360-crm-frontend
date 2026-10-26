@@ -1,3 +1,5 @@
+import type { DatosFiscalesVista } from './datosFiscales.ts'
+
 // Etapas del prospecto en el orden del embudo (decisiones del PO del 9 y 12 de
 // octubre). Quién mueve cada una:
 // - Primer contacto, Visita y Cotización: el vendedor, incluso hacia atrás o
@@ -96,6 +98,11 @@ export interface Prospecto {
   cierrePendiente?: boolean
   /** Precio total de la venta; lo captura el vendedor al pasar a Pago (ERP-1.1). */
   precioTotal?: number | null
+  /**
+   * Datos fiscales del cliente para la factura (ERP-1.3); los captura el
+   * vendedor al pasar a Pago. Nulos si todavía no los tiene.
+   */
+  datosFiscales?: DatosFiscalesVista | null
   /** Solo en finalizados: la unidad que eligió Facturación (CRM-1.4). */
   vehiculo?: VehiculoVendido | null
 }
